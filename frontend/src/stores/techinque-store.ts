@@ -1,45 +1,63 @@
 import { defineStore } from 'pinia';
 import { useArtistStore } from './artist-store';
 
+export interface Technique {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: number;
+  tab_notation?: string;
+  instructions: string;
+  artist_id: string;
+  artist_name: string;
+  progress: {
+    status: string;
+    started_at?: string;
+    completed_at?: string;
+    notes?: string;
+    updated_at?: string;
+  };
+}
+
 export const useTechniqueStore = defineStore('technique', {
   state: () => ({
     loading: false,
-    error: null
+    error: null as string | null
   }),
 
   getters: {
     // Get all techniques from all artists
-    techniques: () => {
+    techniques(): Technique[] {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques;
     },
 
-    getTechniqueById: (state) => (id) => {
+    getTechniqueById: (state) => (id: string): Technique | undefined => {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.find(technique => technique.id === id);
     },
 
-    getTechniquesByDifficulty: (state) => (difficulty) => {
+    getTechniquesByDifficulty: (state) => (difficulty: number): Technique[] => {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique => technique.difficulty === difficulty);
     },
 
-    getTechniquesByStatus: (state) => (status) => {
+    getTechniquesByStatus: (state) => (status: string): Technique[] => {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique => technique.progress?.status === status);
     },
 
-    masteredTechniques: (state) => {
+    masteredTechniques(): Technique[] {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique => technique.progress?.status === 'Mastered');
     },
 
-    inProgressTechniques: (state) => {
+    inProgressTechniques(): Technique[] {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique => technique.progress?.status === 'InProgress');
     },
 
-    notStartedTechniques: (state) => {
+    notStartedTechniques(): Technique[] {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique =>
         !technique.progress || technique.progress.status === 'NotStarted'
@@ -47,11 +65,19 @@ export const useTechniqueStore = defineStore('technique', {
     },
 
     // Progress statistics
-    progressStats: (state) => {
-      const total = state.techniques.length;
-      const mastered = state.masteredTechniques.length;
-      const inProgress = state.inProgressTechniques.length;
-      const notStarted = state.notStartedTechniques.length;
+    progressStats(): {
+      total: number;
+      mastered: number;
+      inProgress: number;
+      notStarted: number;
+      masteredPercentage: number;
+      inProgressPercentage: number;
+      notStartedPercentage: number;
+    } {
+      const total = this.techniques.length;
+      const mastered = this.masteredTechniques.length;
+      const inProgress = this.inProgressTechniques.length;
+      const notStarted = this.notStartedTechniques.length;
 
       return {
         total,
@@ -72,7 +98,7 @@ export const useTechniqueStore = defineStore('technique', {
         const artistStore = useArtistStore();
         await artistStore.fetchArtists();
         return this.techniques;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -80,7 +106,7 @@ export const useTechniqueStore = defineStore('technique', {
       }
     },
 
-    async updateTechniqueProgress(techniqueId, progressUpdate) {
+    async updateTechniqueProgress(techniqueId: string, progressUpdate: any) {
       this.loading = true;
       try {
         // Find the technique and its artist
@@ -115,7 +141,7 @@ export const useTechniqueStore = defineStore('technique', {
         await artistStore.updateArtist(artist);
 
         return artistTechnique;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {

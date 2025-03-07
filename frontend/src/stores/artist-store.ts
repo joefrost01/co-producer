@@ -3,28 +3,74 @@ import axios from 'axios';
 
 const API_URL = '/api';
 
+export interface Technique {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: number;
+  tab_notation?: string;
+  instructions: string;
+  progress: {
+    status: string;
+    started_at?: string;
+    completed_at?: string;
+    notes?: string;
+    updated_at?: string;
+  };
+}
+
+export interface GearSetting {
+  gear_type: string;
+  gear_name: string;
+  settings: Record<string, string>;
+  description: string;
+}
+
+export interface Media {
+  media_type: string;
+  title: string;
+  url: string;
+  description?: string;
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+  band?: string;
+  era?: string;
+  description: string;
+  instrument: string;
+  difficulty: string;
+  tags: string[];
+  techniques: Technique[];
+  gear_settings: GearSetting[];
+  media: Media[];
+  created_at: string;
+  updated_at: string;
+}
+
 export const useArtistStore = defineStore('artist', {
   state: () => ({
-    artists: [],
+    artists: [] as Artist[],
     loading: false,
-    error: null
+    error: null as string | null
   }),
 
   getters: {
-    getArtistById: (state) => (id) => {
+    getArtistById: (state) => (id: string): Artist | undefined => {
       return state.artists.find(artist => artist.id === id);
     },
 
-    getArtistsByInstrument: (state) => (instrument) => {
+    getArtistsByInstrument: (state) => (instrument: string): Artist[] => {
       return state.artists.filter(artist => artist.instrument === instrument);
     },
 
-    getArtistsByTag: (state) => (tag) => {
+    getArtistsByTag: (state) => (tag: string): Artist[] => {
       return state.artists.filter(artist => artist.tags.includes(tag));
     },
 
     getAllTechniques: (state) => {
-      let techniques = [];
+      let techniques: (Technique & { artist_id: string; artist_name: string })[] = [];
       state.artists.forEach(artist => {
         if (artist.techniques && artist.techniques.length) {
           // Add artist name to each technique for reference
@@ -47,7 +93,7 @@ export const useArtistStore = defineStore('artist', {
         const response = await axios.get(`${API_URL}/artists`);
         this.artists = response.data;
         return this.artists;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -55,7 +101,7 @@ export const useArtistStore = defineStore('artist', {
       }
     },
 
-    async fetchArtist(id) {
+    async fetchArtist(id: string) {
       this.loading = true;
       try {
         const response = await axios.get(`${API_URL}/artists/${id}`);
@@ -68,8 +114,8 @@ export const useArtistStore = defineStore('artist', {
           this.artists.push(response.data);
         }
 
-        return response.data;
-      } catch (error) {
+        return response.data as Artist;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -77,13 +123,13 @@ export const useArtistStore = defineStore('artist', {
       }
     },
 
-    async createArtist(artist) {
+    async createArtist(artist: Partial<Artist>) {
       this.loading = true;
       try {
         const response = await axios.post(`${API_URL}/artists`, artist);
         this.artists.push(response.data);
-        return response.data;
-      } catch (error) {
+        return response.data as Artist;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -91,7 +137,7 @@ export const useArtistStore = defineStore('artist', {
       }
     },
 
-    async updateArtist(artist) {
+    async updateArtist(artist: Artist) {
       this.loading = true;
       try {
         const response = await axios.put(`${API_URL}/artists/${artist.id}`, artist);
@@ -102,8 +148,8 @@ export const useArtistStore = defineStore('artist', {
           this.artists[index] = response.data;
         }
 
-        return response.data;
-      } catch (error) {
+        return response.data as Artist;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -111,14 +157,14 @@ export const useArtistStore = defineStore('artist', {
       }
     },
 
-    async deleteArtist(id) {
+    async deleteArtist(id: string) {
       this.loading = true;
       try {
         await axios.delete(`${API_URL}/artists/${id}`);
 
         // Remove artist from the artists array
         this.artists = this.artists.filter(a => a.id !== id);
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -126,7 +172,7 @@ export const useArtistStore = defineStore('artist', {
       }
     },
 
-    async addTechniqueToArtist(artistId, technique) {
+    async addTechniqueToArtist(artistId: string, technique: Partial<Technique>) {
       const artist = this.getArtistById(artistId);
 
       if (!artist) {
@@ -143,13 +189,13 @@ export const useArtistStore = defineStore('artist', {
         technique.id = Date.now().toString();
       }
 
-      artist.techniques.push(technique);
+      artist.techniques.push(technique as Technique);
 
       // Update the artist
       return this.updateArtist(artist);
     },
 
-    async updateTechnique(artistId, technique) {
+    async updateTechnique(artistId: string, technique: Technique) {
       const artist = this.getArtistById(artistId);
 
       if (!artist) {
@@ -169,7 +215,7 @@ export const useArtistStore = defineStore('artist', {
       return this.updateArtist(artist);
     },
 
-    async deleteTechnique(artistId, techniqueId) {
+    async deleteTechnique(artistId: string, techniqueId: string) {
       const artist = this.getArtistById(artistId);
 
       if (!artist) {

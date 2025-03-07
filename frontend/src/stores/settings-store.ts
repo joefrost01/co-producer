@@ -3,27 +3,52 @@ import axios from 'axios';
 
 const API_URL = '/api';
 
+export interface Settings {
+  username: string;
+  email: string;
+  theme: 'light' | 'dark' | 'system';
+  defaultInstrument: string;
+  aiMode: 'online' | 'offline';
+  apiKey: string;
+  detailedBriefings: boolean;
+  maxTokens: number;
+  dbLocation: string;
+  autoBackup: boolean;
+  backupFrequency: 'daily' | 'weekly' | 'monthly';
+}
+
+export interface BackupData {
+  version: string;
+  date: string;
+  settings: Settings;
+  artists: any[];
+  projects: any[];
+  techniques: any[];
+  gear: any[];
+  [key: string]: any;
+}
+
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     settings: {
       username: '',
       email: '',
-      theme: 'light',
+      theme: 'light' as 'light' | 'dark' | 'system',
       defaultInstrument: 'guitar',
-      aiMode: 'offline',
+      aiMode: 'offline' as 'online' | 'offline',
       apiKey: '',
       detailedBriefings: true,
       maxTokens: 2000,
       dbLocation: './data/database',
       autoBackup: false,
-      backupFrequency: 'weekly'
+      backupFrequency: 'weekly' as 'daily' | 'weekly' | 'monthly'
     },
     loading: false,
-    error: null
+    error: null as string | null
   }),
 
   getters: {
-    isDarkMode: (state) => {
+    isDarkMode: (state): boolean => {
       if (state.settings.theme === 'system') {
         return window.matchMedia('(prefers-color-scheme: dark)').matches;
       }
@@ -39,7 +64,7 @@ export const useSettingsStore = defineStore('settings', {
         this.settings = { ...this.settings, ...response.data };
         this.applyTheme();
         return this.settings;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -47,14 +72,14 @@ export const useSettingsStore = defineStore('settings', {
       }
     },
 
-    async updateSettings(settings) {
+    async updateSettings(settings: Partial<Settings>) {
       this.loading = true;
       try {
         const response = await axios.put(`${API_URL}/settings`, settings);
         this.settings = { ...this.settings, ...response.data };
         this.applyTheme();
         return this.settings;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -78,8 +103,8 @@ export const useSettingsStore = defineStore('settings', {
       this.loading = true;
       try {
         const response = await axios.post(`${API_URL}/backup`);
-        return response.data;
-      } catch (error) {
+        return response.data as BackupData;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -87,12 +112,12 @@ export const useSettingsStore = defineStore('settings', {
       }
     },
 
-    async restoreBackup(backupData) {
+    async restoreBackup(backupData: BackupData) {
       this.loading = true;
       try {
         const response = await axios.post(`${API_URL}/restore`, backupData);
         return response.data;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -108,7 +133,7 @@ export const useSettingsStore = defineStore('settings', {
         await axios.post(`${API_URL}/settings/clear-data`);
 
         return true;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {

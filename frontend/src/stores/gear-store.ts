@@ -3,23 +3,33 @@ import axios from 'axios';
 
 const API_URL = '/api';
 
+export interface GearItem {
+  id: string;
+  gear_type: string;
+  gear_name: string;
+  settings: Record<string, string>;
+  description: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const useGearStore = defineStore('gear', {
   state: () => ({
-    gear: [],
+    gear: [] as GearItem[],
     loading: false,
-    error: null
+    error: null as string | null
   }),
 
   getters: {
-    getGearById: (state) => (id) => {
+    getGearById: (state) => (id: string): GearItem | undefined => {
       return state.gear.find(item => item.id === id);
     },
 
-    getGearByType: (state) => (type) => {
+    getGearByType: (state) => (type: string): GearItem[] => {
       return state.gear.filter(item => item.gear_type === type);
     },
 
-    gearTypes: (state) => {
+    gearTypes: (state): string[] => {
       const types = new Set(state.gear.map(item => item.gear_type));
       return Array.from(types);
     }
@@ -32,7 +42,7 @@ export const useGearStore = defineStore('gear', {
         const response = await axios.get(`${API_URL}/gear`);
         this.gear = response.data;
         return this.gear;
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -40,7 +50,7 @@ export const useGearStore = defineStore('gear', {
       }
     },
 
-    async fetchGearItem(id) {
+    async fetchGearItem(id: string) {
       this.loading = true;
       try {
         const response = await axios.get(`${API_URL}/gear/${id}`);
@@ -53,8 +63,8 @@ export const useGearStore = defineStore('gear', {
           this.gear.push(response.data);
         }
 
-        return response.data;
-      } catch (error) {
+        return response.data as GearItem;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -62,13 +72,13 @@ export const useGearStore = defineStore('gear', {
       }
     },
 
-    async createGear(gear) {
+    async createGear(gear: Partial<GearItem>) {
       this.loading = true;
       try {
         const response = await axios.post(`${API_URL}/gear`, gear);
         this.gear.push(response.data);
-        return response.data;
-      } catch (error) {
+        return response.data as GearItem;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -76,7 +86,7 @@ export const useGearStore = defineStore('gear', {
       }
     },
 
-    async updateGear(gear) {
+    async updateGear(gear: GearItem) {
       this.loading = true;
       try {
         const response = await axios.put(`${API_URL}/gear/${gear.id}`, gear);
@@ -87,8 +97,8 @@ export const useGearStore = defineStore('gear', {
           this.gear[index] = response.data;
         }
 
-        return response.data;
-      } catch (error) {
+        return response.data as GearItem;
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
@@ -96,14 +106,14 @@ export const useGearStore = defineStore('gear', {
       }
     },
 
-    async deleteGear(id) {
+    async deleteGear(id: string) {
       this.loading = true;
       try {
         await axios.delete(`${API_URL}/gear/${id}`);
 
         // Remove gear item from the gear array
         this.gear = this.gear.filter(g => g.id !== id);
-      } catch (error) {
+      } catch (error: any) {
         this.error = error.message;
         throw error;
       } finally {
