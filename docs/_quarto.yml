@@ -1,0 +1,98 @@
+project:
+  type: website
+
+# Configure the website
+website:
+  title: "Cyclonetix"
+  # The navbar brand will display the logo + project name
+  navbar:
+    brand:
+      text: "Cyclonetix"
+      href: index.qmd
+    logo: "images/logo.png"
+    search: true
+    right:
+      - icon: github
+        href: "https://github.com/neural-chilli/Cyclonetix"
+      - text: "Download"
+        href: "https://github.com/neural-chilli/Cyclonetix/releases"
+
+  # Define the left sidebar navigation structure
+  sidebar:
+    - title: "Documentation"
+      contents:
+        - text: "Introduction"
+          href: index.qmd
+        - text: "Getting Started"
+          href: getting-started.qmd
+        - section: "Core Concepts"
+          contents:
+            - text: "Architecture Overview"
+              href: core-concepts/architecture.qmd
+            - text: "Tasks and Dependencies"
+              href: core-concepts/tasks.qmd
+            - text: "Execution Flow"
+              href: core-concepts/execution-flow.qmd
+            - text: "Scheduling Models"
+              href: core-concepts/scheduling-models.qmd
+        - section: "User Guide"
+          contents:
+            - text: "Task Definition"
+              href: user-guide/task-definition.qmd
+            - text: "Building DAGs"
+              href: user-guide/building-dags.qmd
+            - text: "Scheduling Workflows"
+              href: user-guide/scheduling-workflows.qmd
+            - text: "UI Overview"
+              href: user-guide/ui-overview.qmd
+        - section: "Deployment"
+          contents:
+            - text: "Installation"
+              href: deployment/installation.qmd
+            - text: "Configuration"
+              href: deployment/configuration.qmd
+            - text: "Security"
+              href: deployment/security.qmd
+            - text: "Scaling"
+              href: deployment/scaling.qmd
+        - section: "Advanced Features"
+          contents:
+            - text: "Evaluation Points"
+              href: advanced/evaluation-points.qmd
+            - text: "Git Integration"
+              href: advanced/git-integration.qmd
+            - text: "Contexts & Parameters"
+              href: advanced/contexts-parameters.qmd
+        - section: "Reference"
+          contents:
+            - text: "Configuration Reference"
+              href: reference/configuration.qmd
+            - text: "CLI Reference"
+              href: reference/cli.qmd
+            - text: "API Reference"
+              href: reference/api.qmd
+            - text: "YAML Schema"
+              href: reference/yaml-schema.qmd
+        - text: "Developer Guide"
+          href: developer-guide.qmd
+        - text: "Troubleshooting & FAQ"
+          href: troubleshooting-faq.qmd
+        - text: "Cookbook"
+          href: cookbook.qmd
+        - text: "Roadmap"
+          href: roadmap.qmd
+
+# Theme configuration
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    toc: true
+    toc-location: right
+    css: styles.css
+
+# (Optional) Execute options if you have code in pages
+execute:
+  warning: false
+  echo: false
