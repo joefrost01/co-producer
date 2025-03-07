@@ -1,0 +1,9 @@
+pub mod routes;
+pub mod dashboard_handler;
+pub mod artist_handler;
+pub mod technique_handler;
+pub mod gear_handler;
+pub mod project_handler;
+pub mod progress_handler;
+pub mod tag_handler;
+pub mod admin_handler;

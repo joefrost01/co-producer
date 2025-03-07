@@ -1,0 +1,70 @@
+# Welcome to Co-Producer
+
+**Co-Producer** is an AI-powered collaborative music production assistant designed to help musicians explore creative ideas, learn new techniques, and structure their production workflow. The system acts as a **smart collaborator**, allowing users to work alongside AI to shape their musical projects while gaining new skills.
+
+## Key Features
+
+- **AI-Powered Creative Collaboration**: Generate production ideas, refine arrangements, and experiment with different styles.
+- **Learning Integration**: Get tailored learning resources for instruments, techniques, and production styles.
+- **Track Development**: Follow structured workflows to build a song from initial concept to completion.
+- **Equipment Awareness**: AI understands your available gear, plugins, and instruments to provide practical suggestions.
+- **Flexible AI Integration**: Work with connected AI models (LangChain-Rust) or use an offline JSON-based briefing system.
+
+## How It Works
+
+### 1. Define Your Project
+- Choose a track concept, style, and inspirations.
+- Define learning objectives for new skills.
+- Provide AI with details on available gear and production tools.
+
+### 2. Generate a Briefing Pack
+- The system compiles an AI-ready **briefing pack** containing:
+    - Track concept details
+    - Stylistic references
+    - Learning objectives
+    - Available equipment and software
+
+### 3. Collaborate with AI
+- Engage in dynamic idea exchanges.
+- Receive production and arrangement suggestions.
+- Get structured learning paths based on defined goals.
+
+### 4. Develop & Finalize the Track
+- Apply learned techniques to your music.
+- Iterate based on AI and personal insights.
+- Export and refine your production.
+
+## Installation & Setup
+
+### Prerequisites
+- **Rust** (for backend processing)
+- **Vue + Quasar** (for frontend UI)
+- **SurrealDB** (for project storage)
+- **LangChain-Rust** (for connected AI interactions)
+
+### Running the Development Server
+
+1. Navigate to the frontend directory:
+   ```sh
+   cd frontend
+   quasar dev
+   ```
+2. Start the backend API:
+   ```sh
+   cargo run --release
+   ```
+3. Access the UI at `http://localhost:9000`.
+
+## Contributing
+
+We welcome contributions! Please refer to our **[Contributing Guide](/CONTRIBUTING.md)** for details on how to get involved.
+
+## License
+
+Co-Producer is licensed under the **MIT License**. See the **[LICENSE](/LICENSE)** file for details.
+
+## Get in Touch
+
+For support, ideas, or collaboration, join our **Discord community** or open an issue on **GitHub**.
+
+Happy Producing! 🎶
