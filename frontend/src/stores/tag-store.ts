@@ -5,16 +5,20 @@ import { useProjectStore } from './project-store';
 
 const API_URL = '/api';
 
+interface TagCounts {
+  [key: string]: number;
+}
+
 export const useTagStore = defineStore('tag', {
   state: () => ({
-    tags: [],
+    tags: [] as string[],
     loading: false,
-    error: null
+    error: null as string | null
   }),
 
   getters: {
     tagUsageCount: (state) => {
-      const counts = {};
+      const counts: TagCounts = {};
 
       // Initialize all tags with count 0
       state.tags.forEach(tag => {
@@ -25,7 +29,7 @@ export const useTagStore = defineStore('tag', {
       const artistStore = useArtistStore();
       artistStore.artists.forEach(artist => {
         artist.tags?.forEach(tag => {
-          if (counts[tag] !== undefined) {
+          if (tag in counts) {
             counts[tag]++;
           }
         });
@@ -36,7 +40,7 @@ export const useTagStore = defineStore('tag', {
       projectStore.projects.forEach(project => {
         if (project.tags) {
           project.tags.forEach(tag => {
-            if (counts[tag] !== undefined) {
+            if (tag in counts) {
               counts[tag]++;
             }
           });
@@ -67,28 +71,28 @@ export const useTagStore = defineStore('tag', {
         this.tags = response.data;
         return this.tags;
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async createTag(tag) {
+    async createTag(tag: string) {
       this.loading = true;
       try {
-        const response = await axios.post(`${API_URL}/tags`, { name: tag });
+        await axios.post(`${API_URL}/tags`, { name: tag });
         this.tags.push(tag);
         return tag;
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async deleteTag(tag) {
+    async deleteTag(tag: string) {
       this.loading = true;
       try {
         await axios.delete(`${API_URL}/tags/${encodeURIComponent(tag)}`);
@@ -101,7 +105,7 @@ export const useTagStore = defineStore('tag', {
         artistStore.artists.forEach(artist => {
           if (artist.tags?.includes(tag)) {
             artist.tags = artist.tags.filter(t => t !== tag);
-            artistStore.updateArtist(artist);
+            void artistStore.updateArtist(artist);
           }
         });
 
@@ -109,18 +113,18 @@ export const useTagStore = defineStore('tag', {
         projectStore.projects.forEach(project => {
           if (project.tags?.includes(tag)) {
             project.tags = project.tags.filter(t => t !== tag);
-            projectStore.updateProject(project);
+            void projectStore.updateProject(project);
           }
         });
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async mergeTags(sourceTag, targetTag) {
+    async mergeTags(sourceTag: string, targetTag: string) {
       this.loading = true;
       try {
         await axios.post(`${API_URL}/tags/merge`, {
@@ -136,7 +140,7 @@ export const useTagStore = defineStore('tag', {
             if (!artist.tags.includes(targetTag)) {
               artist.tags.push(targetTag);
             }
-            artistStore.updateArtist(artist);
+            void artistStore.updateArtist(artist);
           }
         });
 
@@ -148,21 +152,21 @@ export const useTagStore = defineStore('tag', {
             if (!project.tags.includes(targetTag)) {
               project.tags.push(targetTag);
             }
-            projectStore.updateProject(project);
+            void projectStore.updateProject(project);
           }
         });
 
         // Remove sourceTag from tags array
         this.tags = this.tags.filter(t => t !== sourceTag);
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async addTagToArtist(artistId, tag) {
+    async addTagToArtist(artistId: string, tag: string) {
       // Ensure tag exists
       if (!this.tags.includes(tag)) {
         await this.createTag(tag);
@@ -186,7 +190,7 @@ export const useTagStore = defineStore('tag', {
       }
     },
 
-    async removeTagFromArtist(artistId, tag) {
+    async removeTagFromArtist(artistId: string, tag: string) {
       const artistStore = useArtistStore();
       const artist = artistStore.getArtistById(artistId);
 
@@ -200,7 +204,7 @@ export const useTagStore = defineStore('tag', {
       }
     },
 
-    async addTagToProject(projectId, tag) {
+    async addTagToProject(projectId: string, tag: string) {
       // Ensure tag exists
       if (!this.tags.includes(tag)) {
         await this.createTag(tag);
@@ -224,7 +228,7 @@ export const useTagStore = defineStore('tag', {
       }
     },
 
-    async removeTagFromProject(projectId, tag) {
+    async removeTagFromProject(projectId: string, tag: string) {
       const projectStore = useProjectStore();
       const project = projectStore.getProjectById(projectId);
 

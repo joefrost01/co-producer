@@ -4,13 +4,41 @@ import { useTechniqueStore } from './technique-store';
 
 const API_URL = '/api';
 
+interface ProgressData {
+  [key: string]: any;
+}
+
+interface LearningPlanItem {
+  id: string;
+  technique_id: string;
+  target_date: string;
+  notes?: string;
+  priority?: string;
+  created_at?: string;
+}
+
+interface ActivityItem {
+  id?: string;
+  type?: string;
+  timestamp: string;
+  technique_id?: string;
+  technique_name?: string;
+  artist_id?: string;
+  artist_name?: string;
+  status?: string;
+  notes?: string;
+  plan_id?: string;
+  target_date?: string;
+  priority?: string;
+}
+
 export const useProgressStore = defineStore('progress', {
   state: () => ({
-    progressData: {},
-    learningPlan: [],
-    recentActivity: [],
+    progressData: {} as ProgressData,
+    learningPlan: [] as LearningPlanItem[],
+    recentActivity: [] as ActivityItem[],
     loading: false,
-    error: null
+    error: null as string | null
   }),
 
   getters: {
@@ -21,7 +49,7 @@ export const useProgressStore = defineStore('progress', {
     },
 
     // Get progress for a specific technique
-    getTechniqueProgress: (state) => (techniqueId) => {
+    getTechniqueProgress: (state) => (techniqueId: string) => {
       return state.progressData[techniqueId] || null;
     },
 
@@ -62,14 +90,14 @@ export const useProgressStore = defineStore('progress', {
         this.recentActivity = response.data.recentActivity || [];
         return response.data;
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async updateTechniqueProgress(techniqueId, progressUpdate) {
+    async updateTechniqueProgress(techniqueId: string, progressUpdate: Record<string, any>) {
       this.loading = true;
       try {
         // Update technique in the technique store first
@@ -97,14 +125,14 @@ export const useProgressStore = defineStore('progress', {
 
         return this.progressData[techniqueId];
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async addToLearningPlan(plan) {
+    async addToLearningPlan(plan: Partial<LearningPlanItem>) {
       this.loading = true;
       try {
         // In a real application, this would call an API
@@ -114,36 +142,38 @@ export const useProgressStore = defineStore('progress', {
           id: Date.now().toString(),
           ...plan,
           created_at: new Date().toISOString()
-        };
+        } as LearningPlanItem;
 
         this.learningPlan.push(newPlan);
 
         // Add activity record
         const techniqueStore = useTechniqueStore();
-        const technique = techniqueStore.getTechniqueById(plan.technique_id);
+        if (plan.technique_id) {
+          const technique = techniqueStore.getTechniqueById(plan.technique_id);
 
-        if (technique) {
-          this.addActivity({
-            type: 'learning_plan_add',
-            timestamp: new Date().toISOString(),
-            plan_id: newPlan.id,
-            technique_id: technique.id,
-            technique_name: technique.name,
-            target_date: plan.target_date,
-            priority: plan.priority
-          });
+          if (technique) {
+            this.addActivity({
+              type: 'learning_plan_add',
+              timestamp: new Date().toISOString(),
+              plan_id: newPlan.id,
+              technique_id: technique.id,
+              technique_name: technique.name,
+              target_date: plan.target_date,
+              priority: plan.priority
+            });
+          }
         }
 
         return newPlan;
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async removeLearningPlanItem(id) {
+    async removeLearningPlanItem(id: string) {
       this.loading = true;
       try {
         // In a real application, this would call an API
@@ -159,26 +189,28 @@ export const useProgressStore = defineStore('progress', {
 
         // Add activity record
         const techniqueStore = useTechniqueStore();
-        const technique = techniqueStore.getTechniqueById(planItem.technique_id);
+        if (planItem.technique_id) {
+          const technique = techniqueStore.getTechniqueById(planItem.technique_id);
 
-        if (technique) {
-          this.addActivity({
-            type: 'learning_plan_remove',
-            timestamp: new Date().toISOString(),
-            plan_id: id,
-            technique_id: technique.id,
-            technique_name: technique.name
-          });
+          if (technique) {
+            this.addActivity({
+              type: 'learning_plan_remove',
+              timestamp: new Date().toISOString(),
+              plan_id: id,
+              technique_id: technique.id,
+              technique_name: technique.name
+            });
+          }
         }
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async completeLearningPlanItem(id) {
+    async completeLearningPlanItem(id: string) {
       this.loading = true;
       try {
         const planItem = this.learningPlan.find(item => item.id === id);
@@ -188,36 +220,38 @@ export const useProgressStore = defineStore('progress', {
         }
 
         // Update technique progress to Mastered
-        await this.updateTechniqueProgress(planItem.technique_id, {
-          status: 'Mastered',
-          notes: 'Completed from learning plan'
-        });
-
-        // Remove from learning plan
-        await this.removeLearningPlanItem(id);
-
-        // Add activity record
-        const techniqueStore = useTechniqueStore();
-        const technique = techniqueStore.getTechniqueById(planItem.technique_id);
-
-        if (technique) {
-          this.addActivity({
-            type: 'learning_plan_complete',
-            timestamp: new Date().toISOString(),
-            plan_id: id,
-            technique_id: technique.id,
-            technique_name: technique.name
+        if (planItem.technique_id) {
+          await this.updateTechniqueProgress(planItem.technique_id, {
+            status: 'Mastered',
+            notes: 'Completed from learning plan'
           });
+
+          // Remove from learning plan
+          await this.removeLearningPlanItem(id);
+
+          // Add activity record
+          const techniqueStore = useTechniqueStore();
+          const technique = techniqueStore.getTechniqueById(planItem.technique_id);
+
+          if (technique) {
+            this.addActivity({
+              type: 'learning_plan_complete',
+              timestamp: new Date().toISOString(),
+              plan_id: id,
+              technique_id: technique.id,
+              technique_name: technique.name
+            });
+          }
         }
       } catch (error) {
-        this.error = error.message;
+        this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    addActivity(activity) {
+    addActivity(activity: ActivityItem) {
       // Add activity to recent activity
       this.recentActivity.push(activity);
 

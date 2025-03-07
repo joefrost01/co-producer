@@ -156,6 +156,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useProjectStore } from 'src/stores/project-store';
+import type { Project } from 'src/stores/project-store';
 
 const $q = useQuasar();
 const projectStore = useProjectStore();
@@ -163,7 +164,7 @@ const projectStore = useProjectStore();
 const loading = ref(true);
 const search = ref('');
 const deleteDialog = ref(false);
-const projectToDelete = ref(null);
+const projectToDelete = ref<Project | null>(null);
 const sortBy = ref('updated');
 
 const sortOptions = [
@@ -173,14 +174,24 @@ const sortOptions = [
   { label: 'Name (Z-A)', value: 'name_desc' }
 ];
 
-const columns = [
+interface ColumnDefinition {
+  name: string;
+  required?: boolean;
+  label: string;
+  align?: 'left' | 'right' | 'center';
+  field: string | ((row: any) => any);
+  format?: (val: any) => string;
+  sortable?: boolean;
+}
+
+const columns: ColumnDefinition[] = [
   {
     name: 'title',
     required: true,
     label: 'Project',
     align: 'left',
-    field: row => row.title,
-    format: val => `${val}`,
+    field: (row: Project) => row.title,
+    format: (val: string) => `${val}`,
     sortable: true
   },
   {
@@ -195,7 +206,7 @@ const columns = [
     label: 'Last Updated',
     field: 'updated_at',
     sortable: true,
-    format: val => new Date(val).toLocaleDateString()
+    format: (val: string) => new Date(val).toLocaleDateString()
   },
   {
     name: 'actions',
@@ -206,7 +217,7 @@ const columns = [
 ];
 
 const filteredProjects = computed(() => {
-  let projects = [...projectStore.projects];
+  const projects = [...projectStore.projects];
 
   // Apply sorting
   switch (sortBy.value) {
@@ -230,7 +241,7 @@ const filteredProjects = computed(() => {
 onMounted(async () => {
   try {
     await projectStore.fetchProjects();
-  } catch (error) {
+  } catch (_error) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -242,7 +253,7 @@ onMounted(async () => {
   }
 });
 
-function confirmDelete(project) {
+function confirmDelete(project: Project) {
   projectToDelete.value = project;
   deleteDialog.value = true;
 }
@@ -258,7 +269,7 @@ async function deleteProject() {
       message: 'Project deleted successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch (_error) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -268,7 +279,7 @@ async function deleteProject() {
   }
 }
 
-async function duplicateProject(id) {
+async function duplicateProject(id: string) {
   try {
     const newProject = await projectStore.duplicateProject(id);
     $q.notify({
@@ -278,7 +289,7 @@ async function duplicateProject(id) {
       icon: 'check'
     });
     // Optionally navigate to the new project
-  } catch (error) {
+  } catch (_error) {
     $q.notify({
       color: 'negative',
       position: 'top',
