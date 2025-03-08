@@ -626,28 +626,31 @@ onMounted(async () => {
   }
 });
 
-async function loadTechnique(id: string): Promise<void> {
+function loadTechnique(id: string): Promise<void> {
   loading.value = true;
-  try {
-    const techniqueData = techniqueStore.getTechniqueById(id);
+  return new Promise((resolve, reject) => {
+    try {
+      const techniqueData = techniqueStore.getTechniqueById(id);
 
-    if (!techniqueData) {
-      throw new Error('Technique not found');
+      if (!techniqueData) {
+        throw new Error('Technique not found');
+      }
+
+      technique.value = { ...techniqueData };
+      loading.value = false;
+      resolve();
+    } catch (error) {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'Failed to load technique',
+        icon: 'report_problem'
+      });
+      void router.push('/techniques');
+      loading.value = false;
+      reject(error);
     }
-
-    technique.value = { ...techniqueData };
-  } catch {
-    $q.notify({
-      color: 'negative',
-      position: 'top',
-      message: 'Failed to load technique',
-      icon: 'report_problem'
-    });
-    void router.push('/techniques');
-    // Remove the problematic resolve() call
-  } finally {
-    loading.value = false;
-  }
+  });
 }
 
 function editTechnique(): void {
@@ -740,8 +743,10 @@ function addToLearningPlan(): void {
   planDialog.value = true;
 }
 
-async function saveLearningPlan(): Promise<void> {
+function saveLearningPlan(): Promise<void> {
   try {
+    // Since progressStore.addToLearningPlan doesn't return a promise, we don't need to await it
+    // Use void to explicitly indicate we're ignoring any promise return
     void progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
@@ -752,13 +757,15 @@ async function saveLearningPlan(): Promise<void> {
     });
 
     planDialog.value = false;
-  } catch {
+    return Promise.resolve();
+  } catch (error) {
     $q.notify({
       color: 'negative',
       position: 'top',
       message: 'Failed to add technique to learning plan',
       icon: 'report_problem'
     });
+    return Promise.reject(error);
   }
 }
 

@@ -411,12 +411,14 @@ function removeSetting(key: string) {
   delete editedGear.value.settings[key];
 }
 
-function updateSettingKey(index: number, oldKey: string, newKeyValue?: string) {
+function updateSettingKey(index: number, oldKey: string, newKeyValue?: string): void {
   const newKey = settingKeys.value[index];
   if (newKey && newKey !== oldKey && oldKey) {
     const value = editedGear.value.settings[oldKey];
-    editedGear.value.settings[newKey] = value;
-    delete editedGear.value.settings[oldKey];
+    if (typeof newKey === 'string') {
+      editedGear.value.settings[newKey] = value;
+      delete editedGear.value.settings[oldKey];
+    }
   }
 }
 

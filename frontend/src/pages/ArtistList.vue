@@ -476,12 +476,15 @@
   </q-page>
 </template>
 
+// Replace the script section in src/pages/ArtistList.vue
+
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useTagStore } from 'src/stores/tag-store';
+import type { Artist, Technique, GearSetting } from 'src/models';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -492,19 +495,19 @@ const loading = ref(true);
 const artistDialog = ref(false);
 const deleteDialog = ref(false);
 const isEditing = ref(false);
-const artistToDelete = ref(null);
-const settingKeys = ref([]);
+const artistToDelete = ref<Artist | null>(null);
+const settingKeys = ref<string[][]>([]);
 
 // Filters
 const filters = reactive({
   search: '',
-  instrument: null,
-  difficulty: null,
-  tags: []
+  instrument: null as string | null,
+  difficulty: null as string | null,
+  tags: [] as string[]
 });
 
 // Form state
-const editedArtist = ref({
+const editedArtist = ref<Artist>({
   id: '',
   name: '',
   band: '',
@@ -594,14 +597,14 @@ onMounted(async () => {
   }
 });
 
-function resetFilters() {
+function resetFilters(): void {
   filters.search = '';
   filters.instrument = null;
   filters.difficulty = null;
   filters.tags = [];
 }
 
-function openAddDialog() {
+function openAddDialog(): void {
   isEditing.value = false;
   editedArtist.value = {
     id: '',
@@ -622,7 +625,7 @@ function openAddDialog() {
   artistDialog.value = true;
 }
 
-function editArtist(artist) {
+function editArtist(artist: Artist): void {
   isEditing.value = true;
   editedArtist.value = JSON.parse(JSON.stringify(artist)); // Deep copy
 
@@ -634,16 +637,16 @@ function editArtist(artist) {
   artistDialog.value = true;
 }
 
-function viewArtist(artist) {
-  router.push(`/artists/${artist.id}`);
+function viewArtist(artist: Artist): void {
+  void router.push(`/artists/${artist.id}`);
 }
 
-function confirmDeleteArtist(artist) {
+function confirmDeleteArtist(artist: Artist): void {
   artistToDelete.value = artist;
   deleteDialog.value = true;
 }
 
-async function deleteArtist() {
+async function deleteArtist(): Promise<void> {
   if (!artistToDelete.value) return;
 
   try {
@@ -664,40 +667,52 @@ async function deleteArtist() {
   }
 }
 
-function addTechnique() {
-  editedArtist.value.techniques.push({
+function addTechnique(): void {
+  const newTechnique: Technique = {
     id: '',
+    artist_id: editedArtist.value.id,
     name: '',
     description: '',
     difficulty: 3,
     tab_notation: '',
     instructions: '',
     progress: { status: 'NotStarted' }
-  });
+  };
+
+  editedArtist.value.techniques.push(newTechnique);
 }
 
-function removeTechnique(index) {
+function removeTechnique(index: number): void {
   editedArtist.value.techniques.splice(index, 1);
 }
 
-function addGear() {
-  editedArtist.value.gear_settings.push({
+function addGear(): void {
+  const newGear: GearSetting = {
     gear_type: '',
     gear_name: '',
     settings: {},
     description: ''
-  });
+  };
+
+  editedArtist.value.gear_settings.push(newGear);
   settingKeys.value.push([]);
 }
 
-function removeGear(index) {
+function removeGear(index: number): void {
   editedArtist.value.gear_settings.splice(index, 1);
   settingKeys.value.splice(index, 1);
 }
 
-function addGearSetting(gearIndex) {
-  const newKey = `setting${Object.keys(editedArtist.value.gear_settings[gearIndex].settings).length + 1}`;
-  editedArtist.value.gear_settings[gearIndex].settings[newKey] = '';
+function addGearSetting(gearIndex: number): void {
+  const gear = editedArtist.value.gear_settings[gearIndex];
+  const gearSettings = gear.settings || {};
+  const newKey = `setting${Object.keys(gearSettings).length + 1}`;
+
+  if (!gear.settings) {
+    gear.settings = {};
+  }
+
+  gear.settings[newKey] = '';
 
   if (!settingKeys.value[gearIndex]) {
     settingKeys.value[gearIndex] = [];
@@ -705,24 +720,34 @@ function addGearSetting(gearIndex) {
   settingKeys.value[gearIndex].push(newKey);
 }
 
-function removeGearSetting(gearIndex, key) {
-  const keyIndex = settingKeys.value[gearIndex].indexOf(key);
-  if (keyIndex !== -1) {
-    settingKeys.value[gearIndex].splice(keyIndex, 1);
+function removeGearSetting(gearIndex: number, key: string): void {
+  if (settingKeys.value[gearIndex]) {
+    const keyIndex = settingKeys.value[gearIndex].indexOf(key);
+    if (keyIndex !== -1) {
+      settingKeys.value[gearIndex].splice(keyIndex, 1);
+    }
   }
-  delete editedArtist.value.gear_settings[gearIndex].settings[key];
+
+  const gear = editedArtist.value.gear_settings[gearIndex];
+  if (gear && gear.settings) {
+    delete gear.settings[key];
+  }
 }
 
-function updateGearSettingKey(gearIndex, keyIndex, oldKey) {
+function updateGearSettingKey(gearIndex: number, keyIndex: number, oldKey: string): void {
+  if (!settingKeys.value[gearIndex]) return;
+
   const newKey = settingKeys.value[gearIndex][keyIndex];
-  if (newKey !== oldKey && oldKey) {
-    const value = editedArtist.value.gear_settings[gearIndex].settings[oldKey];
-    editedArtist.value.gear_settings[gearIndex].settings[newKey] = value;
-    delete editedArtist.value.gear_settings[gearIndex].settings[oldKey];
+  const gear = editedArtist.value.gear_settings[gearIndex];
+
+  if (newKey && newKey !== oldKey && oldKey && gear && gear.settings) {
+    const value = gear.settings[oldKey];
+    gear.settings[newKey] = value;
+    delete gear.settings[oldKey];
   }
 }
 
-async function saveArtist() {
+async function saveArtist(): Promise<void> {
   try {
     if (isEditing.value) {
       await artistStore.updateArtist(editedArtist.value);

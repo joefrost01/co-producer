@@ -426,6 +426,8 @@
   </q-page>
 </template>
 
+// Replace the script section in src/pages/ArtistDetail.vue
+
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -464,7 +466,7 @@ const artist = ref<Artist>({
 });
 const showFilter = ref(false);
 const planDialog = ref(false);
-const selectedTechnique = ref(null);
+const selectedTechnique = ref<Technique | null>(null);
 
 // Difficulty rating conversion from 'easy', 'moderate', 'challenging' to 1-3
 const difficulty = computed(() => {
@@ -479,8 +481,8 @@ const difficulty = computed(() => {
 // Filter options
 const filter = reactive({
   search: '',
-  difficulty: null,
-  status: null
+  difficulty: null as string | null,
+  status: null as string | null
 });
 
 const difficultyOptions = [
@@ -503,7 +505,14 @@ const priorityOptions = [
   { label: 'Low', value: 'low' }
 ];
 
-const learningPlan = reactive({
+interface LearningPlan {
+  technique_id: string;
+  target_date: string;
+  notes: string;
+  priority: string;
+}
+
+const learningPlan = reactive<LearningPlan>({
   technique_id: '',
   target_date: '',
   notes: '',
@@ -523,7 +532,10 @@ const filteredTechniques = computed(() => {
 
     // Difficulty filter
     if (filter.difficulty) {
-      const diff = parseInt(technique.difficulty);
+      const diff = typeof technique.difficulty === 'string'
+        ? parseInt(technique.difficulty)
+        : technique.difficulty;
+
       if (filter.difficulty === 'beginner' && (diff > 2)) return false;
       if (filter.difficulty === 'intermediate' && diff !== 3) return false;
       if (filter.difficulty === 'advanced' && (diff < 4)) return false;
@@ -555,7 +567,7 @@ onMounted(async () => {
   }
 });
 
-function formatDifficulty(difficulty) {
+function formatDifficulty(difficulty: string): string {
   switch (difficulty) {
     case 'easy': return 'Easy';
     case 'moderate': return 'Moderate';
@@ -564,8 +576,8 @@ function formatDifficulty(difficulty) {
   }
 }
 
-function formatGearType(type) {
-  const typeMap = {
+function formatGearType(type: string): string {
+  const typeMap: Record<string, string> = {
     'amp': 'Amplifier',
     'pedal': 'Pedal/Effect',
     'instrument': 'Instrument',
@@ -579,7 +591,7 @@ function formatGearType(type) {
   return typeMap[type] || type;
 }
 
-function getMediaIcon(type) {
+function getMediaIcon(type: string): string {
   switch (type) {
     case 'youtube': return 'videocam';
     case 'image': return 'image';
@@ -588,7 +600,7 @@ function getMediaIcon(type) {
   }
 }
 
-function getMediaColor(type) {
+function getMediaColor(type: string): string {
   switch (type) {
     case 'youtube': return 'red';
     case 'image': return 'green';
@@ -597,13 +609,13 @@ function getMediaColor(type) {
   }
 }
 
-function resetFilters() {
+function resetFilters(): void {
   filter.search = '';
   filter.difficulty = null;
   filter.status = null;
 }
 
-function editArtist() {
+function editArtist(): void {
   // In a real app, this would open the edit form or navigate to an edit page
   // For now, we'll just show a notification
   $q.notify({
@@ -614,14 +626,18 @@ function editArtist() {
   });
 }
 
-async function updateProgress(techniqueId, status) {
+async function updateProgress(techniqueId: string, status: string): Promise<void> {
   try {
     await progressStore.updateTechniqueProgress(techniqueId, { status });
 
     // Update the technique in our local artist object
     const technique = artist.value.techniques.find(t => t.id === techniqueId);
     if (technique) {
-      technique.progress = { ...technique.progress || {}, status };
+      if (!technique.progress) {
+        technique.progress = { status };
+      } else {
+        technique.progress.status = status;
+      }
     }
 
     $q.notify({
@@ -640,20 +656,25 @@ async function updateProgress(techniqueId, status) {
   }
 }
 
-function addToLearningPlan(technique) {
+function addToLearningPlan(technique: Technique): void {
   selectedTechnique.value = technique;
   learningPlan.technique_id = technique.id;
-  learningPlan.target_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)
-    .toISOString()
-    .split('T')[0]; // Set default date to 2 weeks from now
+
+  // Create a date 2 weeks from now
+  const futureDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14);
+  // Format date as YYYY-MM-DD
+  const dateStr = futureDate.toISOString().split('T')[0];
+
+  learningPlan.target_date = dateStr;
   learningPlan.notes = '';
   learningPlan.priority = 'medium';
   planDialog.value = true;
 }
 
-async function saveLearningPlan() {
+async function saveLearningPlan(): Promise<void> {
   try {
-    await progressStore.addToLearningPlan(learningPlan);
+    // We don't need to await this since it doesn't return a promise
+    progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',

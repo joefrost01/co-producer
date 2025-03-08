@@ -480,9 +480,9 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useProgressStore } from 'src/stores/progress-store';
-import { Technique } from 'src/models/technique';
-import { ProgressStatus } from 'src/models/progress';
-import { ColumnDefinition } from 'src/models/common';
+import type { Technique } from 'src/models/technique';
+import type { ProgressStatus } from 'src/models/progress';
+import type { ColumnDefinition } from 'src/models/common';
 
 const $q = useQuasar();
 const techniqueStore = useTechniqueStore();
@@ -659,7 +659,8 @@ function getProgressColor(status: string): string {
 }
 
 function getDifficultyColor(level: string | number): string {
-  switch (parseInt(level as string)) {
+  const numLevel = typeof level === 'string' ? parseInt(level) : level;
+  switch (numLevel) {
     case 1: return 'green';
     case 2: return 'light-green';
     case 3: return 'amber';
@@ -725,8 +726,9 @@ function addToLearningPlan(technique: Technique): void {
 
 async function saveLearningPlan(): Promise<void> {
   try {
-    // This would be implemented with a real API call
-    // await learningPlanStore.addTechniqueToLearningPlan(learningPlan);
+    // Since progressStore.addToLearningPlan doesn't return a promise, we don't need to await it
+    // Using void to explicitly show we're ignoring any promise return value
+    void progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',

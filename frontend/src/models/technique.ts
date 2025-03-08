@@ -1,4 +1,4 @@
-import { ProgressStatus } from './progress';
+import type { ProgressStatus } from './progress';
 
 export interface Technique {
   id: string;

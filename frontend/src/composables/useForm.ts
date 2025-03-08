@@ -1,9 +1,13 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 
-export function useForm<T extends Object>(
+interface FormOptions {
+  resetAfterSave: boolean;
+}
+
+export function useForm<T extends Record<string, unknown>>(
   initialValues: T,
-  saveFunction: (data: T) => Promise<any>,
+  saveFunction: (data: T) => Promise<unknown>,
   options = { resetAfterSave: true }
 ) {
   const $q = useQuasar();
@@ -30,7 +34,7 @@ export function useForm<T extends Object>(
       }
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       $q.notify({
         color: 'negative',
         position: 'top',
@@ -41,12 +45,5 @@ export function useForm<T extends Object>(
     } finally {
       loading.value = false;
     }
-  };
-
-  return {
-    formData,
-    loading,
-    resetForm,
-    handleSubmit
   };
 }

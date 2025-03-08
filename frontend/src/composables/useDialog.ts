@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export function useDialog<T = any>() {
+export function useDialog<T = unknown>() {
   const isOpen = ref(false);
   const selectedItem = ref<T | null>(null);
   const isEditing = ref(false);

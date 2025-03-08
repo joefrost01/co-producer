@@ -1,6 +1,6 @@
-import { Technique } from 'src/models/technique'
-import { GearSetting } from 'src/models/gear'
-import { Media } from 'src/models/common'
+import type { Technique } from 'src/models/technique'
+import type { GearSetting } from 'src/models/gear'
+import type { Media } from 'src/models/common'
 
 export interface Artist {
   id: string;
