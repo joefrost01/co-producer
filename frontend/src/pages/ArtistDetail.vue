@@ -439,14 +439,14 @@ import EntityCard from 'src/components/common/EntityCard.vue';
 import StatusBadge from 'src/components/common/StatusBadge.vue';
 import FilterPanel from 'src/components/common/FilterPanel.vue';
 import { truncateText, getDifficultyColor } from 'src/lib/utils';
-import type { Artist, Technique, GearSetting, Media } from 'src/models';
+import type { Artist, Technique } from 'src/models';
 
 const $q = useQuasar();
 const route = useRoute();
-const router = useRouter();
+//const router = useRouter();
 const artistStore = useArtistStore();
 const progressStore = useProgressStore();
-const { confirm } = useConfirmation();
+//const { confirm } = useConfirmation();
 
 const loading = ref(true);
 const artist = ref<Artist>({
@@ -555,7 +555,7 @@ onMounted(async () => {
     const id = route.params.id as string;
     const artistData = await artistStore.fetchArtist(id);
     artist.value = { ...artistData };
-  } catch (error) {
+  } catch (_error) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -675,9 +675,8 @@ function addToLearningPlan(technique: Technique): void {
 
 async function saveLearningPlan(): Promise<void> {
   try {
-    // We don't need to await this since it doesn't return a promise
-    // Using void to explicitly show we're ignoring any promise return value
-    void progressStore.addToLearningPlan(learningPlan);
+    // Use await since we need to handle promise rejection
+    await progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',

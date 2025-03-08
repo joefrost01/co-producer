@@ -16,9 +16,9 @@ export interface BackupData {
   version: string;
   date: string;
   settings: Settings;
-  artists: any[];
-  projects: any[];
-  techniques: any[];
-  gear: any[];
-  [key: string]: any;
+  artists: Record<string, unknown>[];  // More specific than any[]
+  projects: Record<string, unknown>[];
+  techniques: Record<string, unknown>[];
+  gear: Record<string, unknown>[];
+  [key: string]: unknown;  // More specific than any
 }

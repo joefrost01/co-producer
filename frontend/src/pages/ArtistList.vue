@@ -384,7 +384,7 @@
                         >
                           <div class="col-5">
                             <q-input
-                              v-model="settingKeys[index][i]"
+                              v-model="settingKeys[index]?.[i] || ''"
                               label="Parameter"
                               outlined
                               dense
@@ -400,10 +400,11 @@
                               dense
                             />
                             <q-input v-else
-                                     label="Value"
-                                     outlined
-                                     dense
-                                     disable
+                                     :model-value="''"
+                            label="Value"
+                            outlined
+                            dense
+                            disable
                             />
                           </div>
                           <div class="col-2 flex items-center">
@@ -733,15 +734,17 @@ function updateGearSettingKey(gearIndex: number, keyIndex: number): void {
   if (!settingKeys.value[gearIndex]) return;
 
   const newKey = settingKeys.value[gearIndex][keyIndex];
-  const oldKeys = Object.keys(editedArtist.value.gear_settings[gearIndex].settings || {});
+  const oldKeys = Object.keys(editedArtist.value.gear_settings[gearIndex]?.settings || {});
 
   // Find the old key that's not in the current settingKeys array
-  const oldKey = oldKeys.find(k => !settingKeys.value[gearIndex].includes(k) ||
-    (settingKeys.value[gearIndex].indexOf(k) !== keyIndex));
+  const oldKey = oldKeys.find(k =>
+    !settingKeys.value[gearIndex]?.includes(k) ||
+    (settingKeys.value[gearIndex]?.indexOf(k) !== keyIndex)
+  );
 
   if (oldKey && newKey && oldKey !== newKey) {
     const gear = editedArtist.value.gear_settings[gearIndex];
-    if (gear && gear.settings) {
+    if (gear?.settings) {
       const value = gear.settings[oldKey];
       if (value !== undefined) {
         gear.settings[newKey] = value;

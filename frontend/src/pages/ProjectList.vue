@@ -175,12 +175,10 @@ const sortOptions = [
 ];
 
 interface ColumnDefinition {
-  name: string;
-  required?: boolean;
   label: string;
   align?: 'left' | 'right' | 'center';
-  field: string | ((row: any) => any);
-  format?: (val: any) => string;
+  field: string | ((row: Record<string, unknown>) => unknown);
+  format?: (val: unknown) => string;
   sortable?: boolean;
 }
 
