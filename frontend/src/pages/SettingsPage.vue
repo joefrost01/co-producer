@@ -466,7 +466,7 @@ onMounted(async () => {
     // Load settings
     const currentSettings = await settingsStore.fetchSettings();
     Object.assign(settings, currentSettings);
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -497,7 +497,7 @@ async function saveGeneralSettings() {
       message: 'Settings saved successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -529,7 +529,7 @@ async function saveAISettings() {
       message: 'AI settings saved successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -575,7 +575,7 @@ async function createBackup() {
       message: 'Backup created successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -645,7 +645,7 @@ async function restoreFromFile() {
     };
 
     reader.readAsText(backupFile.value);
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -717,7 +717,7 @@ async function restoreBackup(backup: BackupHistoryItem) {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (error) {
+    } catch {
       $q.loading.hide();
       $q.notify({
         color: 'negative',
@@ -767,7 +767,7 @@ async function clearAllData() {
     setTimeout(() => {
       window.location.reload();
     }, 1000);
-  } catch (error) {
+  } catch {
     $q.loading.hide();
     $q.notify({
       color: 'negative',

@@ -146,7 +146,11 @@
                 </q-item-section>
 
                 <q-item-section side>
-                  <q-badge :color="getProgressColor(technique.progress.status)" text-color="white">
+                  <q-badge
+                    v-if="technique.progress"
+                    :color="getProgressColor(technique.progress.status)"
+                    text-color="white"
+                  >
                     {{ formatProgressStatus(technique.progress.status) }}
                   </q-badge>
                 </q-item-section>
@@ -195,6 +199,17 @@ import { useProjectStore } from 'src/stores/project-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useProgressStore } from 'src/stores/progress-store';
+import { Project } from 'src/models/project';
+import { Technique } from 'src/models/technique';
+
+interface ActivityItem {
+  id: number;
+  title: string;
+  description: string;
+  timestamp: string;
+  icon: string;
+  color: string;
+}
 
 const projectStore = useProjectStore();
 const artistStore = useArtistStore();
@@ -202,16 +217,16 @@ const techniqueStore = useTechniqueStore();
 const progressStore = useProgressStore();
 
 const loading = ref(true);
-const recentProjects = ref([]);
-const recentTechniques = ref([]);
-const activities = ref([]);
+const recentProjects = ref<Project[]>([]);
+const recentTechniques = ref<Technique[]>([]);
+const activities = ref<ActivityItem[]>([]);
 
 const stats = computed(() => {
   return {
     projectCount: projectStore.projects.length,
     artistCount: artistStore.artists.length,
     techniqueCount: techniqueStore.techniques.length,
-    masteredTechniques: techniqueStore.techniques.filter(t => t.progress.status === 'Mastered').length
+    masteredTechniques: techniqueStore.techniques.filter(t => t.progress?.status === 'Mastered').length || 0
   };
 });
 
@@ -233,14 +248,14 @@ onMounted(async () => {
     // Get recent techniques with progress
     recentTechniques.value = [...techniqueStore.techniques]
       .sort((a, b) => {
-        if (a.progress.status === 'Mastered' && b.progress.status !== 'Mastered') return -1;
-        if (a.progress.status !== 'Mastered' && b.progress.status === 'Mastered') return 1;
+        if (a.progress?.status === 'Mastered' && b.progress?.status !== 'Mastered') return -1;
+        if (a.progress?.status !== 'Mastered' && b.progress?.status === 'Mastered') return 1;
         return 0;
       })
       .slice(0, 5);
 
     // Get recent activities
-    activities.value = generateMockActivities(); // Replace with actual API call when available
+    activities.value = generateMockActivities();
 
   } catch (error) {
     console.error('Failed to load dashboard data:', error);
@@ -249,12 +264,12 @@ onMounted(async () => {
   }
 });
 
-function truncateText(text, maxLength) {
+function truncateText(text: string, maxLength: number): string {
   if (!text) return '';
   return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
 }
 
-function formatDate(dateString) {
+function formatDate(dateString: string): string {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -263,7 +278,7 @@ function formatDate(dateString) {
   });
 }
 
-function formatTime(dateString) {
+function formatTime(dateString: string): string {
   if (!dateString) return '';
   return new Date(dateString).toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -271,7 +286,7 @@ function formatTime(dateString) {
   });
 }
 
-function formatProgressStatus(status) {
+function formatProgressStatus(status: string): string {
   switch (status) {
     case 'NotStarted': return 'Not Started';
     case 'InProgress': return 'In Progress';
@@ -280,7 +295,7 @@ function formatProgressStatus(status) {
   }
 }
 
-function getProgressColor(status) {
+function getProgressColor(status: string): string {
   switch (status) {
     case 'NotStarted': return 'grey';
     case 'InProgress': return 'blue';
@@ -290,15 +305,14 @@ function getProgressColor(status) {
 }
 
 // This function generates mock activity data for the timeline
-// Replace with actual data from the API when available
-function generateMockActivities() {
+function generateMockActivities(): ActivityItem[] {
   const now = new Date();
 
   return [
     {
       id: 1,
       title: 'Project Created',
-      description: `Created new project "${recentProjects.value.length > 0 ? recentProjects.value[0].title : 'Example Project'}"`,
+      description: `Created new project "${recentProjects.value.length > 0 && recentProjects.value[0] ? recentProjects.value[0].title : 'Example Project'}"`,
       timestamp: new Date(now.getTime() - 1000 * 60 * 60).toISOString(), // 1 hour ago
       icon: 'add',
       color: 'primary'
@@ -314,7 +328,7 @@ function generateMockActivities() {
     {
       id: 3,
       title: 'Technique Mastered',
-      description: `Mastered technique "${recentTechniques.value.length > 0 ? recentTechniques.value[0].name : 'Example Technique'}"`,
+      description: `Mastered technique "${recentTechniques.value.length > 0 && recentTechniques.value[0] ? recentTechniques.value[0].name : 'Example Technique'}"`,
       timestamp: new Date(now.getTime() - 1000 * 60 * 20).toISOString(), // 20 minutes ago
       icon: 'check_circle',
       color: 'positive'

@@ -488,7 +488,8 @@ import { useTechniqueStore } from 'src/stores/technique-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
 import type { Technique } from 'src/models/technique';
-import { resolve } from 'node:url'
+// Remove this unused import
+// import { resolve } from 'node:url'
 
 // LearningPlanInput interface
 interface LearningPlanInput {
@@ -614,7 +615,7 @@ onMounted(async () => {
     if (route.params.id) {
       await loadTechnique(route.params.id as string);
     }
-  } catch (_err) {
+  } catch{
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -635,7 +636,7 @@ async function loadTechnique(id: string): Promise<void> {
     }
 
     technique.value = { ...techniqueData };
-  } catch (err) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -643,7 +644,7 @@ async function loadTechnique(id: string): Promise<void> {
       icon: 'report_problem'
     });
     void router.push('/techniques');
-    resolve();
+    // Remove the problematic resolve() call
   } finally {
     loading.value = false;
   }
@@ -674,7 +675,7 @@ async function saveTechnique(): Promise<void> {
     });
 
     editDialog.value = false;
-  } catch (err) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -712,7 +713,7 @@ async function updateProgress(status: string): Promise<void> {
       message: `Progress updated to ${formatProgressStatus(status)}`,
       icon: 'check'
     });
-  } catch (err) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -751,7 +752,7 @@ async function saveLearningPlan(): Promise<void> {
     });
 
     planDialog.value = false;
-  } catch (err) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',

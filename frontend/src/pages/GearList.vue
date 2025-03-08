@@ -190,7 +190,7 @@
                     label="Parameter"
                     outlined
                     dense
-                    @update:model-value="(newVal: string) => updateSettingKey(index, key)"
+                    @update:model-value="(newVal) => updateSettingKey(index, key, String(newVal))"
                   />
                 </div>
                 <div class="col-5">
@@ -411,9 +411,9 @@ function removeSetting(key: string) {
   delete editedGear.value.settings[key];
 }
 
-function updateSettingKey(index: number, oldKey: string) {
+function updateSettingKey(index: number, oldKey: string, newKeyValue?: string) {
   const newKey = settingKeys.value[index];
-  if (newKey !== oldKey && oldKey) {
+  if (newKey && newKey !== oldKey && oldKey) {
     const value = editedGear.value.settings[oldKey];
     editedGear.value.settings[newKey] = value;
     delete editedGear.value.settings[oldKey];

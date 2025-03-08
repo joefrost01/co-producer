@@ -292,7 +292,7 @@ onMounted(async () => {
       artistStore.fetchArtists(),
       projectStore.fetchProjects()
     ]);
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -331,7 +331,7 @@ async function addTag() {
       icon: 'check'
     });
     addDialog.value = false;
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -355,7 +355,7 @@ async function deleteTag() {
       message: 'Tag deleted successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -384,7 +384,7 @@ async function performMerge() {
     // Reset form
     mergeForm.source = '';
     mergeForm.target = '';
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
