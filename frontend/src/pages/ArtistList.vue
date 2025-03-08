@@ -570,8 +570,12 @@ const filteredArtists = computed(() => {
   });
 });
 
+interface MarkerLabels {
+  [key: string]: string;
+}
+
 // Marker labels for difficulty slider
-const markerLabelsClass = computed(() => {
+const markerLabelsClass = computed<MarkerLabels>(() => {
   return {
     1: 'text-green',
     2: 'text-light-green',
