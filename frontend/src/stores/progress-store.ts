@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useTechniqueStore } from './technique-store';
 import type { LearningPlanItem, ActivityItem } from 'src/models';
 import type { ProgressStatus } from 'src/models/progress';
+import type { Technique } from 'src/models/technique';
 
 const API_URL = '/api';
 
@@ -75,16 +76,21 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
-    // Fix for technique-store.ts - Update progress handling
-
     async updateTechniqueProgress(techniqueId: string, progressUpdate: Partial<ProgressStatus>) {
       this.loading = true;
       try {
         // Update technique in the technique store first
         const techniqueStore = useTechniqueStore();
-        // Since updateTechniqueProgress is no longer async in the technique store,
-        // we don't need to await it
-        const updatedTechnique = techniqueStore.updateTechniqueProgress(techniqueId, progressUpdate);
+
+        // Get the technique before updating it to have access to its properties
+        const technique = techniqueStore.getTechniqueById(techniqueId);
+
+        if (!technique) {
+          throw new Error(`Technique with ID ${techniqueId} not found`);
+        }
+
+        // Call the update method but don't await since it's no longer async
+        techniqueStore.updateTechniqueProgress(techniqueId, progressUpdate);
 
         // Now update our local progress data
         this.progressData[techniqueId] = {
@@ -93,17 +99,19 @@ export const useProgressStore = defineStore('progress', {
           updated_at: new Date().toISOString()
         };
 
-        // Add activity record - ensure all properties match ActivityItem interface
-        this.addActivity({
+        // Add activity record with careful type handling
+        const activityItem: ActivityItem = {
           type: 'progress_update',
           timestamp: new Date().toISOString(),
           technique_id: techniqueId,
-          technique_name: updatedTechnique.name,
-          artist_id: updatedTechnique.artist_id,
-          artist_name: updatedTechnique.artist_name || 'Unknown Artist',
-          status: progressUpdate.status || '',  // Provide empty string instead of undefined
-          notes: progressUpdate.notes          // This is already optional in the interface
-        });
+          technique_name: technique.name,
+          artist_id: technique.artist_id,
+          artist_name: technique.artist_name || 'Unknown Artist',
+          status: progressUpdate.status || undefined,
+          notes: progressUpdate.notes // Already optional in the interface
+        };
+
+        this.addActivity(activityItem);
 
         return this.progressData[techniqueId];
       } catch (error: unknown) {
@@ -135,16 +143,17 @@ export const useProgressStore = defineStore('progress', {
           const technique = techniqueStore.getTechniqueById(plan.technique_id);
 
           if (technique) {
-            this.addActivity({
+            const activityItem: ActivityItem = {
               type: 'learning_plan_add',
               timestamp: new Date().toISOString(),
               plan_id: newPlan.id,
               technique_id: technique.id,
               technique_name: technique.name,
-              // Fix: Provide default values for potentially undefined properties
-              target_date: plan.target_date || new Date().toISOString(),
-              priority: plan.priority || 'Normal'
-            });
+              target_date: plan.target_date,
+              priority: plan.priority
+            };
+
+            this.addActivity(activityItem);
           }
         }
 
@@ -178,13 +187,15 @@ export const useProgressStore = defineStore('progress', {
           const technique = techniqueStore.getTechniqueById(planItem.technique_id);
 
           if (technique) {
-            this.addActivity({
+            const activityItem: ActivityItem = {
               type: 'learning_plan_remove',
               timestamp: new Date().toISOString(),
               plan_id: id,
               technique_id: technique.id,
               technique_name: technique.name
-            });
+            };
+
+            this.addActivity(activityItem);
           }
         }
       } catch (error: unknown) {
@@ -219,13 +230,15 @@ export const useProgressStore = defineStore('progress', {
           const technique = techniqueStore.getTechniqueById(planItem.technique_id);
 
           if (technique) {
-            this.addActivity({
+            const activityItem: ActivityItem = {
               type: 'learning_plan_complete',
               timestamp: new Date().toISOString(),
               plan_id: id,
               technique_id: technique.id,
               technique_name: technique.name
-            });
+            };
+
+            this.addActivity(activityItem);
           }
         }
       } catch (error: unknown) {
