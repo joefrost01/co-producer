@@ -13,11 +13,11 @@
           <div class="row items-center">
             <h1 class="text-h4 q-my-none">{{ technique.name }}</h1>
             <q-badge
-              :color="getProgressColor(technique.progress.status)"
+              :color="getProgressColor(technique.progress?.status || 'NotStarted')"
               text-color="white"
               class="q-ml-md"
             >
-              {{ formatProgressStatus(technique.progress.status) }}
+              {{ formatProgressStatus(technique.progress?.status || 'NotStarted') }}
             </q-badge>
           </div>
           <div class="text-subtitle1 q-mt-sm text-grey-8 row items-center">
@@ -129,17 +129,17 @@
                   </q-badge>
                 </div>
 
-                <div v-if="technique.progress.notes" class="q-mb-md">
+                <div v-if="technique.progress?.notes" class="q-mb-md">
                   <div class="text-subtitle2">Notes:</div>
                   <p>{{ technique.progress.notes }}</p>
                 </div>
 
-                <div v-if="technique.progress.started_at" class="q-mb-md">
+                <div v-if="technique.progress?.started_at" class="q-mb-md">
                   <div class="text-subtitle2">Started:</div>
                   <p>{{ formatDate(technique.progress.started_at) }}</p>
                 </div>
 
-                <div v-if="technique.progress.completed_at" class="q-mb-md">
+                <div v-if="technique.progress?.completed_at" class="q-mb-md">
                   <div class="text-subtitle2">Mastered:</div>
                   <p>{{ formatDate(technique.progress.completed_at) }}</p>
                 </div>
@@ -180,30 +180,30 @@
               <div class="text-subtitle2 q-mb-sm">Other Techniques by this Artist</div>
 
               <q-list separator>
-                <q-item
-                  v-for="relatedTechnique in relatedTechniques"
-                  :key="relatedTechnique.id"
-                  clickable
-                  :to="`/techniques/${relatedTechnique.id}`"
-                  v-if="relatedTechnique.id !== technique.id"
-                >
-                  <q-item-section avatar>
-                    <q-avatar :color="getDifficultyColor(relatedTechnique.difficulty)" text-color="white">
-                      {{ relatedTechnique.difficulty }}
-                    </q-avatar>
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>{{ relatedTechnique.name }}</q-item-label>
-                    <q-item-label caption lines="1">
-                      {{ truncateText(relatedTechnique.description, 60) }}
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-badge :color="getProgressColor(relatedTechnique.progress.status)">
-                      {{ formatProgressStatus(relatedTechnique.progress.status) }}
-                    </q-badge>
-                  </q-item-section>
-                </q-item>
+                <template v-for="(relatedTech, index) in relatedTechniques" :key="relatedTech.id">
+                  <q-item
+                    v-if="relatedTech.id !== technique.id"
+                    clickable
+                    :to="`/techniques/${relatedTech.id}`"
+                  >
+                    <q-item-section avatar>
+                      <q-avatar :color="getDifficultyColor(relatedTech.difficulty)" text-color="white">
+                        {{ relatedTech.difficulty }}
+                      </q-avatar>
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>{{ relatedTech.name }}</q-item-label>
+                      <q-item-label caption lines="1">
+                        {{ truncateText(relatedTech.description, 60) }}
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-badge :color="getProgressColor(relatedTech.progress?.status || 'NotStarted')">
+                        {{ formatProgressStatus(relatedTech.progress?.status || 'NotStarted') }}
+                      </q-badge>
+                    </q-item-section>
+                  </q-item>
+                </template>
               </q-list>
 
               <div v-if="relatedTechniques.length <= 1" class="text-center q-pa-md">
@@ -300,8 +300,8 @@
                     <q-item-label caption>{{ similarTechnique.artist_name }}</q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    <q-badge :color="getProgressColor(similarTechnique.progress.status)">
-                      {{ formatProgressStatus(similarTechnique.progress.status) }}
+                    <q-badge :color="getProgressColor(similarTechnique.progress?.status || 'NotStarted')">
+                      {{ formatProgressStatus(similarTechnique.progress?.status || 'NotStarted') }}
                     </q-badge>
                   </q-item-section>
                 </q-item>
@@ -364,7 +364,7 @@
                       label-always
                       markers
                       marker-labels
-                      :marker-labels-class="markerLabelsClass"
+                      marker-labels-class="text-primary"
                     />
                   </div>
                 </div>
@@ -489,6 +489,21 @@ import { useQuasar } from 'quasar';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
+import { Technique } from 'src/models/technique';
+import { ProgressStatus } from 'src/models/progress';
+
+// Define MarkerLabels interface for type safety
+interface MarkerLabels {
+  [key: string]: string;
+}
+
+// Define LearningPlanInput interface
+interface LearningPlanInput {
+  technique_id: string;
+  target_date: string;
+  notes: string;
+  priority: string;
+}
 
 const $q = useQuasar();
 const route = useRoute();
@@ -500,7 +515,9 @@ const progressStore = useProgressStore();
 const loading = ref(true);
 const editDialog = ref(false);
 const planDialog = ref(false);
-const technique = ref({
+
+// Properly typed technique ref
+const technique = ref<Technique>({
   id: '',
   artist_id: '',
   name: '',
@@ -508,7 +525,9 @@ const technique = ref({
   difficulty: 3,
   tab_notation: '',
   instructions: '',
-  progress: { status: 'NotStarted' }
+  progress: {
+    status: 'NotStarted'
+  }
 });
 
 // Difficulty rating conversion
@@ -516,8 +535,8 @@ const difficulty = computed(() => {
   return technique.value.difficulty;
 });
 
-// Form state for editing
-const editedTechnique = ref({
+// Form state for editing - properly typed
+const editedTechnique = ref<Technique>({
   id: '',
   artist_id: '',
   name: '',
@@ -525,11 +544,13 @@ const editedTechnique = ref({
   difficulty: 3,
   tab_notation: '',
   instructions: '',
-  progress: { status: 'NotStarted' }
+  progress: {
+    status: 'NotStarted'
+  }
 });
 
-// Learning plan
-const learningPlan = reactive({
+// Learning plan with proper typing
+const learningPlan = reactive<LearningPlanInput>({
   technique_id: '',
   target_date: '',
   notes: '',
@@ -542,16 +563,14 @@ const priorityOptions = [
   { label: 'Low', value: 'low' }
 ];
 
-// Marker labels for difficulty slider
-const markerLabelsClass = computed(() => {
-  return {
-    1: 'text-green',
-    2: 'text-light-green',
-    3: 'text-amber',
-    4: 'text-orange',
-    5: 'text-red'
-  };
-});
+// Define colors for difficulty levels
+const difficultyColors = {
+  '1': 'text-green',
+  '2': 'text-light-green',
+  '3': 'text-amber',
+  '4': 'text-orange',
+  '5': 'text-red'
+};
 
 // Artist information
 const artistInfo = computed(() => {
@@ -622,7 +641,7 @@ onMounted(async () => {
   }
 });
 
-async function loadTechnique(id) {
+async function loadTechnique(id: string): Promise<void> {
   loading.value = true;
   try {
     const techniqueData = techniqueStore.getTechniqueById(id);
@@ -645,12 +664,12 @@ async function loadTechnique(id) {
   }
 }
 
-function editTechnique() {
+function editTechnique(): void {
   editedTechnique.value = JSON.parse(JSON.stringify(technique.value)); // Deep copy
   editDialog.value = true;
 }
 
-async function saveTechnique() {
+async function saveTechnique(): Promise<void> {
   try {
     await artistStore.updateTechnique(editedTechnique.value.artist_id, editedTechnique.value);
 
@@ -680,23 +699,27 @@ async function saveTechnique() {
   }
 }
 
-async function updateProgress(status) {
+async function updateProgress(status: string): Promise<void> {
   try {
     await progressStore.updateTechniqueProgress(technique.value.id, {
       status,
       updated_at: new Date().toISOString(),
-      ...(status === 'InProgress' && !technique.value.progress.started_at ? { started_at: new Date().toISOString() } : {}),
+      ...(status === 'InProgress' && !technique.value.progress?.started_at
+        ? { started_at: new Date().toISOString() } : {}),
       ...(status === 'Mastered' ? { completed_at: new Date().toISOString() } : {})
     });
 
     // Update local technique data
-    technique.value.progress = {
-      ...technique.value.progress,
-      status,
-      updated_at: new Date().toISOString(),
-      ...(status === 'InProgress' && !technique.value.progress.started_at ? { started_at: new Date().toISOString() } : {}),
-      ...(status === 'Mastered' ? { completed_at: new Date().toISOString() } : {})
-    };
+    if (technique.value.progress) {
+      technique.value.progress = {
+        ...technique.value.progress,
+        status,
+        updated_at: new Date().toISOString(),
+        ...(status === 'InProgress' && !technique.value.progress.started_at
+          ? { started_at: new Date().toISOString() } : {}),
+        ...(status === 'Mastered' ? { completed_at: new Date().toISOString() } : {})
+      };
+    }
 
     $q.notify({
       color: 'positive',
@@ -714,17 +737,24 @@ async function updateProgress(status) {
   }
 }
 
-function addToLearningPlan() {
+function addToLearningPlan(): void {
   learningPlan.technique_id = technique.value.id;
-  learningPlan.target_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)
-    .toISOString()
-    .split('T')[0]; // Set default date to 2 weeks from now
+
+  // Safely handle date formatting for target_date
+  const targetDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14);
+  const dateStr = targetDate.toISOString().split('T')[0];
+  if (dateStr) {
+    learningPlan.target_date = dateStr;
+  } else {
+    learningPlan.target_date = targetDate.toISOString().substring(0, 10);
+  }
+
   learningPlan.notes = '';
   learningPlan.priority = 'medium';
   planDialog.value = true;
 }
 
-async function saveLearningPlan() {
+async function saveLearningPlan(): Promise<void> {
   try {
     await progressStore.addToLearningPlan(learningPlan);
 
@@ -746,7 +776,7 @@ async function saveLearningPlan() {
   }
 }
 
-function formatProgressStatus(status) {
+function formatProgressStatus(status: string): string {
   switch (status) {
     case 'NotStarted': return 'Not Started';
     case 'InProgress': return 'In Progress';
@@ -755,7 +785,7 @@ function formatProgressStatus(status) {
   }
 }
 
-function getProgressColor(status) {
+function getProgressColor(status: string): string {
   switch (status) {
     case 'NotStarted': return 'grey';
     case 'InProgress': return 'blue';
@@ -764,8 +794,9 @@ function getProgressColor(status) {
   }
 }
 
-function getDifficultyColor(level) {
-  switch (parseInt(level)) {
+function getDifficultyColor(level: number | string): string {
+  const numLevel = typeof level === 'string' ? parseInt(level) : level;
+  switch (numLevel) {
     case 1: return 'green';
     case 2: return 'light-green';
     case 3: return 'amber';
@@ -775,7 +806,7 @@ function getDifficultyColor(level) {
   }
 }
 
-function formatDate(dateString) {
+function formatDate(dateString: string): string {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -784,7 +815,7 @@ function formatDate(dateString) {
   });
 }
 
-function truncateText(text, maxLength) {
+function truncateText(text: string, maxLength: number): string {
   if (!text) return '';
   return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
 }
