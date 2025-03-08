@@ -180,7 +180,7 @@
               <div class="text-subtitle2 q-mb-sm">Other Techniques by this Artist</div>
 
               <q-list separator>
-                <template v-for="(relatedTech, index) in relatedTechniques" :key="relatedTech.id">
+                <template v-for="relatedTech in relatedTechniques" :key="relatedTech.id">
                   <q-item
                     v-if="relatedTech.id !== technique.id"
                     clickable
@@ -363,8 +363,6 @@
                       label
                       label-always
                       markers
-                      marker-labels
-                      marker-labels-class="text-primary"
                     />
                   </div>
                 </div>
@@ -489,15 +487,10 @@ import { useQuasar } from 'quasar';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
-import { Technique } from 'src/models/technique';
-import { ProgressStatus } from 'src/models/progress';
+import type { Technique } from 'src/models/technique';
+import { resolve } from 'node:url'
 
-// Define MarkerLabels interface for type safety
-interface MarkerLabels {
-  [key: string]: string;
-}
-
-// Define LearningPlanInput interface
+// LearningPlanInput interface
 interface LearningPlanInput {
   technique_id: string;
   target_date: string;
@@ -563,15 +556,6 @@ const priorityOptions = [
   { label: 'Low', value: 'low' }
 ];
 
-// Define colors for difficulty levels
-const difficultyColors = {
-  '1': 'text-green',
-  '2': 'text-light-green',
-  '3': 'text-amber',
-  '4': 'text-orange',
-  '5': 'text-red'
-};
-
 // Artist information
 const artistInfo = computed(() => {
   return artistStore.getArtistById(technique.value.artist_id) || { name: 'Unknown Artist', instrument: 'Unknown' };
@@ -612,7 +596,7 @@ watch(
   () => route.params.id,
   (newId) => {
     if (newId) {
-      loadTechnique(newId as string);
+      void loadTechnique(newId as string);
     }
   }
 );
@@ -630,7 +614,7 @@ onMounted(async () => {
     if (route.params.id) {
       await loadTechnique(route.params.id as string);
     }
-  } catch (error) {
+  } catch (_err) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -651,14 +635,15 @@ async function loadTechnique(id: string): Promise<void> {
     }
 
     technique.value = { ...techniqueData };
-  } catch (error) {
+  } catch (err) {
     $q.notify({
       color: 'negative',
       position: 'top',
       message: 'Failed to load technique',
       icon: 'report_problem'
     });
-    router.push('/techniques');
+    void router.push('/techniques');
+    resolve();
   } finally {
     loading.value = false;
   }
@@ -676,7 +661,7 @@ async function saveTechnique(): Promise<void> {
     // Reload the technique after update
     if (editedTechnique.value.artist_id !== technique.value.artist_id) {
       // Artist changed, need to navigate to the updated URL
-      router.push(`/techniques/${editedTechnique.value.id}`);
+      void router.push(`/techniques/${editedTechnique.value.id}`);
     } else {
       await loadTechnique(editedTechnique.value.id);
     }
@@ -689,7 +674,7 @@ async function saveTechnique(): Promise<void> {
     });
 
     editDialog.value = false;
-  } catch (error) {
+  } catch (err) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -727,7 +712,7 @@ async function updateProgress(status: string): Promise<void> {
       message: `Progress updated to ${formatProgressStatus(status)}`,
       icon: 'check'
     });
-  } catch (error) {
+  } catch (err) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -756,7 +741,7 @@ function addToLearningPlan(): void {
 
 async function saveLearningPlan(): Promise<void> {
   try {
-    await progressStore.addToLearningPlan(learningPlan);
+    void progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',
@@ -766,7 +751,7 @@ async function saveLearningPlan(): Promise<void> {
     });
 
     planDialog.value = false;
-  } catch (error) {
+  } catch (err) {
     $q.notify({
       color: 'negative',
       position: 'top',

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import { Artist, Technique } from 'src/models'
+import type { Artist, Technique } from 'src/models';
 
 const API_URL = '/api';
 
@@ -48,8 +48,8 @@ export const useArtistStore = defineStore('artist', {
         const response = await axios.get(`${API_URL}/artists`);
         this.artists = response.data;
         return this.artists;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -70,8 +70,8 @@ export const useArtistStore = defineStore('artist', {
         }
 
         return response.data as Artist;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -84,8 +84,8 @@ export const useArtistStore = defineStore('artist', {
         const response = await axios.post(`${API_URL}/artists`, artist);
         this.artists.push(response.data);
         return response.data as Artist;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -104,8 +104,8 @@ export const useArtistStore = defineStore('artist', {
         }
 
         return response.data as Artist;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -119,8 +119,8 @@ export const useArtistStore = defineStore('artist', {
 
         // Remove artist from the artists array
         this.artists = this.artists.filter(a => a.id !== id);
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;

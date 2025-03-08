@@ -42,8 +42,8 @@ export const useGearStore = defineStore('gear', {
         const response = await axios.get(`${API_URL}/gear`);
         this.gear = response.data;
         return this.gear;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -64,8 +64,8 @@ export const useGearStore = defineStore('gear', {
         }
 
         return response.data as GearItem;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -78,8 +78,8 @@ export const useGearStore = defineStore('gear', {
         const response = await axios.post(`${API_URL}/gear`, gear);
         this.gear.push(response.data);
         return response.data as GearItem;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -98,8 +98,8 @@ export const useGearStore = defineStore('gear', {
         }
 
         return response.data as GearItem;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -113,8 +113,8 @@ export const useGearStore = defineStore('gear', {
 
         // Remove gear item from the gear array
         this.gear = this.gear.filter(g => g.id !== id);
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;

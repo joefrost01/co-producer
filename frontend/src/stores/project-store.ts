@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import { Project, Briefing } from 'src/models';
+import type { Project, Briefing } from 'src/models';
 
 const API_URL = '/api';
 
@@ -42,8 +42,8 @@ export const useProjectStore = defineStore('project', {
         const response = await axios.get(`${API_URL}/projects`);
         this.projects = response.data;
         return this.projects;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -64,8 +64,8 @@ export const useProjectStore = defineStore('project', {
         }
 
         return response.data as Project;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -78,8 +78,8 @@ export const useProjectStore = defineStore('project', {
         const response = await axios.post(`${API_URL}/projects`, project);
         this.projects.push(response.data);
         return response.data as Project;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -98,8 +98,8 @@ export const useProjectStore = defineStore('project', {
         }
 
         return response.data as Project;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -113,18 +113,18 @@ export const useProjectStore = defineStore('project', {
 
         // Remove project from the projects array
         this.projects = this.projects.filter(p => p.id !== id);
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async duplicateProject(id: string) {
+    async duplicateProject(projectId: string) {
       this.loading = true;
       try {
-        const projectToDuplicate = this.getProjectById(id);
+        const projectToDuplicate = this.getProjectById(projectId);
 
         if (!projectToDuplicate) {
           throw new Error('Project not found');
@@ -132,7 +132,9 @@ export const useProjectStore = defineStore('project', {
 
         // Create a new project based on the existing one, but omit specific fields
         // to avoid TypeScript errors with undefined values
-        const { id: _, created_at, updated_at, ...restOfProject } = projectToDuplicate;
+        // Use object rest pattern to exclude fields we don't want to copy
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, created_at, updated_at, ...restOfProject } = projectToDuplicate;
 
         const newProject: Partial<Project> = {
           ...restOfProject,
@@ -140,8 +142,8 @@ export const useProjectStore = defineStore('project', {
         };
 
         return await this.createProject(newProject);
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -160,8 +162,8 @@ export const useProjectStore = defineStore('project', {
         }
 
         return response.data;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -172,8 +174,8 @@ export const useProjectStore = defineStore('project', {
       try {
         const response = await axios.get(`${API_URL}/projects/${projectId}/briefing`);
         return response.data as Briefing;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       }
     },
@@ -182,8 +184,8 @@ export const useProjectStore = defineStore('project', {
       try {
         const response = await axios.get(`${API_URL}/projects/${projectId}/briefing/markdown`);
         return response.data as string;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       }
     },
@@ -191,9 +193,9 @@ export const useProjectStore = defineStore('project', {
     async fetchBriefingJson(projectId: string) {
       try {
         const response = await axios.get(`${API_URL}/projects/${projectId}/briefing/json`);
-        return response.data as any;
-      } catch (error: any) {
-        this.error = error.message;
+        return response.data;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       }
     }

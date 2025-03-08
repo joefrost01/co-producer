@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import { useTechniqueStore } from './technique-store';
-import { LearningPlanItem, ActivityItem } from 'src/models';
+import type { LearningPlanItem, ActivityItem } from 'src/models';
+import type { ProgressStatus } from 'src/models/progress';
 
 const API_URL = '/api';
 
 interface ProgressData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
-
 
 export const useProgressStore = defineStore('progress', {
   state: () => ({
@@ -21,7 +21,7 @@ export const useProgressStore = defineStore('progress', {
 
   getters: {
     // Get overall progress statistics
-    overallProgress: (state) => {
+    overallProgress: () => {
       const techniqueStore = useTechniqueStore();
       return techniqueStore.progressStats;
     },
@@ -67,7 +67,7 @@ export const useProgressStore = defineStore('progress', {
         this.learningPlan = response.data.learningPlan || [];
         this.recentActivity = response.data.recentActivity || [];
         return response.data;
-      } catch (error) {
+      } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
@@ -75,7 +75,7 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
-    async updateTechniqueProgress(techniqueId: string, progressUpdate: Record<string, any>) {
+    async updateTechniqueProgress(techniqueId: string, progressUpdate: Partial<ProgressStatus>) {
       this.loading = true;
       try {
         // Update technique in the technique store first
@@ -103,7 +103,7 @@ export const useProgressStore = defineStore('progress', {
         });
 
         return this.progressData[techniqueId];
-      } catch (error) {
+      } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
@@ -111,7 +111,8 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
-    async addToLearningPlan(plan: Partial<LearningPlanItem>) {
+    // Remove async since there's no await operation
+    addToLearningPlan(plan: Partial<LearningPlanItem>) {
       this.loading = true;
       try {
         // In a real application, this would call an API
@@ -145,7 +146,7 @@ export const useProgressStore = defineStore('progress', {
         }
 
         return newPlan;
-      } catch (error) {
+      } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
@@ -153,7 +154,8 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
-    async removeLearningPlanItem(id: string) {
+    // Remove async since there's no await operation
+    removeLearningPlanItem(id: string) {
       this.loading = true;
       try {
         // In a real application, this would call an API
@@ -182,7 +184,7 @@ export const useProgressStore = defineStore('progress', {
             });
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {
@@ -207,7 +209,7 @@ export const useProgressStore = defineStore('progress', {
           });
 
           // Remove from learning plan
-          await this.removeLearningPlanItem(id);
+          this.removeLearningPlanItem(id);
 
           // Add activity record
           const techniqueStore = useTechniqueStore();
@@ -223,7 +225,7 @@ export const useProgressStore = defineStore('progress', {
             });
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;
       } finally {

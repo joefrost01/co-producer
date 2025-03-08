@@ -183,19 +183,19 @@
               <div class="text-subtitle1 q-mb-sm">Settings</div>
               <p class="text-caption q-mb-md">Add parameter settings for this gear (e.g., knob positions, presets, etc.)</p>
 
-              <div v-for="(value, key, index) in editedGear.settings" :key="index" class="row q-col-gutter-sm q-mb-xs">
+              <div v-for="(key, index) in settingKeys" :key="index" class="row q-col-gutter-sm q-mb-xs">
                 <div class="col-5">
                   <q-input
                     v-model="settingKeys[index]"
                     label="Parameter"
                     outlined
                     dense
-                    @update:model-value="updateSettingKey(index, key)"
+                    @update:model-value="(newVal: string) => updateSettingKey(index, key)"
                   />
                 </div>
                 <div class="col-5">
                   <q-input
-                    v-model="editedGear.settings[settingKeys[index]]"
+                    v-model="editedGear.settings[key]"
                     label="Value"
                     outlined
                     dense
@@ -259,6 +259,7 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { useGearStore } from 'src/stores/gear-store';
+import { GearItem } from 'src/models/gear';
 
 const $q = useQuasar();
 const gearStore = useGearStore();
@@ -267,17 +268,17 @@ const loading = ref(true);
 const gearDialog = ref(false);
 const deleteDialog = ref(false);
 const isEditing = ref(false);
-const gearToDelete = ref(null);
-const settingKeys = ref([]);
+const gearToDelete = ref<GearItem | null>(null);
+const settingKeys = ref<string[]>([]);
 
 // Filters
 const filters = reactive({
   search: '',
-  type: null
+  type: null as string | null
 });
 
 // Form state
-const editedGear = ref({
+const editedGear = ref<GearItem>({
   id: '',
   gear_type: '',
   gear_name: '',
@@ -348,7 +349,7 @@ function openAddDialog() {
   gearDialog.value = true;
 }
 
-function editGear(gear) {
+function editGear(gear: GearItem) {
   isEditing.value = true;
   editedGear.value = JSON.parse(JSON.stringify(gear)); // Deep copy
 
@@ -358,7 +359,7 @@ function editGear(gear) {
   gearDialog.value = true;
 }
 
-function duplicateGear(gear) {
+function duplicateGear(gear: GearItem) {
   const gearCopy = JSON.parse(JSON.stringify(gear));
   gearCopy.id = '';
   gearCopy.gear_name = `${gearCopy.gear_name} (Copy)`;
@@ -370,7 +371,7 @@ function duplicateGear(gear) {
   gearDialog.value = true;
 }
 
-function confirmDeleteGear(gear) {
+function confirmDeleteGear(gear: GearItem) {
   gearToDelete.value = gear;
   deleteDialog.value = true;
 }
@@ -402,7 +403,7 @@ function addSetting() {
   settingKeys.value.push(newKey);
 }
 
-function removeSetting(key) {
+function removeSetting(key: string) {
   const keyIndex = settingKeys.value.indexOf(key);
   if (keyIndex !== -1) {
     settingKeys.value.splice(keyIndex, 1);
@@ -410,7 +411,7 @@ function removeSetting(key) {
   delete editedGear.value.settings[key];
 }
 
-function updateSettingKey(index, oldKey) {
+function updateSettingKey(index: number, oldKey: string) {
   const newKey = settingKeys.value[index];
   if (newKey !== oldKey && oldKey) {
     const value = editedGear.value.settings[oldKey];
@@ -449,12 +450,12 @@ async function saveGear() {
   }
 }
 
-function formatGearType(type) {
+function formatGearType(type: string): string {
   const option = gearTypeOptions.find(opt => opt.value === type);
   return option ? option.label : type;
 }
 
-function getGearTypeColor(type) {
+function getGearTypeColor(type: string): string {
   switch (type) {
     case 'amp': return 'deep-orange';
     case 'pedal': return 'green';
@@ -467,7 +468,7 @@ function getGearTypeColor(type) {
   }
 }
 
-function getGearTypeIcon(type) {
+function getGearTypeIcon(type: string): string {
   switch (type) {
     case 'amp': return 'speaker';
     case 'pedal': return 'pedal_bike';

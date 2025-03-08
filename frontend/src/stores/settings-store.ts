@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-import { Settings, BackupData } from 'src/models/settings'
+import type { Settings, BackupData } from 'src/models/settings';
 
 const API_URL = '/api';
-
-
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
@@ -42,8 +40,8 @@ export const useSettingsStore = defineStore('settings', {
         this.settings = { ...this.settings, ...response.data };
         this.applyTheme();
         return this.settings;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -57,8 +55,8 @@ export const useSettingsStore = defineStore('settings', {
         this.settings = { ...this.settings, ...response.data };
         this.applyTheme();
         return this.settings;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -82,8 +80,8 @@ export const useSettingsStore = defineStore('settings', {
       try {
         const response = await axios.post(`${API_URL}/backup`);
         return response.data as BackupData;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -95,8 +93,8 @@ export const useSettingsStore = defineStore('settings', {
       try {
         const response = await axios.post(`${API_URL}/restore`, backupData);
         return response.data;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
@@ -111,8 +109,8 @@ export const useSettingsStore = defineStore('settings', {
         await axios.post(`${API_URL}/settings/clear-data`);
 
         return true;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;

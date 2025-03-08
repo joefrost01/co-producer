@@ -11,8 +11,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Todo, Meta } from 'components/models';
 import ExampleComponent from 'components/ExampleComponent.vue';
+
+// Define the types inline or import from your models directory
+interface Todo {
+  id: number;
+  content: string;
+}
+
+interface Meta {
+  totalCount: number;
+}
 
 const todos = ref<Todo[]>([
   {

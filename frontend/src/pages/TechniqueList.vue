@@ -475,16 +475,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
-import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
-import { useConfirmation } from 'src/composables/useConfirmation';
 // Import utility function but use our local version to handle undefined properly
 // import { getDifficultyColor } from 'src/lib/utils';
-import { Technique } from 'src/models/technique';
-import { ProgressStatus } from 'src/models/progress';
+import type { Technique } from 'src/models/technique';
 import FilterPanel from 'src/components/common/FilterPanel.vue';
 import EntityCard from 'src/components/common/EntityCard.vue';
 import StatusBadge from 'src/components/common/StatusBadge.vue';
@@ -499,11 +496,9 @@ interface LearningPlanData {
 }
 
 const $q = useQuasar();
-const router = useRouter();
 const techniqueStore = useTechniqueStore();
 const artistStore = useArtistStore();
 const progressStore = useProgressStore();
-const { confirm } = useConfirmation<Technique>();
 
 const loading = ref(true);
 const techniqueDialog = ref(false);
@@ -609,7 +604,7 @@ onMounted(async () => {
       artistStore.fetchArtists(),
       progressStore.fetchProgress()
     ]);
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -673,7 +668,7 @@ async function deleteTechnique() {
         icon: 'check'
       });
     }
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -703,7 +698,7 @@ async function saveTechnique() {
       });
     }
     techniqueDialog.value = false;
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -728,9 +723,9 @@ function addToLearningPlan(technique: Technique) {
   planDialog.value = true;
 }
 
-async function saveLearningPlan() {
+function saveLearningPlan() {
   try {
-    await progressStore.addToLearningPlan(learningPlan);
+    progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',
@@ -740,7 +735,7 @@ async function saveLearningPlan() {
     });
 
     planDialog.value = false;
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -768,7 +763,7 @@ async function updateProgress(techniqueId: string, status: string) {
       }
       selectedTechnique.value.progress.status = status;
     }
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -786,17 +781,6 @@ function formatProgressStatus(status: string | undefined) {
     case 'InProgress': return 'In Progress';
     case 'Mastered': return 'Mastered';
     default: return status;
-  }
-}
-
-function getProgressColor(status: string | undefined) {
-  if (!status) return 'grey';
-
-  switch (status) {
-    case 'NotStarted': return 'grey';
-    case 'InProgress': return 'blue';
-    case 'Mastered': return 'positive';
-    default: return 'grey';
   }
 }
 </script>

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { useArtistStore } from './artist-store';
-import { Technique } from 'src/models';
+import type { Technique } from 'src/models';
+import type { ProgressStatus } from 'src/models/progress';
 
 export const useTechniqueStore = defineStore('technique', {
   state: () => ({
@@ -15,17 +16,17 @@ export const useTechniqueStore = defineStore('technique', {
       return artistStore.getAllTechniques;
     },
 
-    getTechniqueById: (state) => (id: string): Technique | undefined => {
+    getTechniqueById: () => (id: string): Technique | undefined => {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.find(technique => technique.id === id);
     },
 
-    getTechniquesByDifficulty: (state) => (difficulty: number): Technique[] => {
+    getTechniquesByDifficulty: () => (difficulty: number): Technique[] => {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique => technique.difficulty === difficulty);
     },
 
-    getTechniquesByStatus: (state) => (status: string): Technique[] => {
+    getTechniquesByStatus: () => (status: string): Technique[] => {
       const artistStore = useArtistStore();
       return artistStore.getAllTechniques.filter(technique => technique.progress?.status === status);
     },
@@ -81,15 +82,15 @@ export const useTechniqueStore = defineStore('technique', {
         const artistStore = useArtistStore();
         await artistStore.fetchArtists();
         return this.techniques;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    async updateTechniqueProgress(techniqueId: string, progressUpdate: any) {
+    async updateTechniqueProgress(techniqueId: string, progressUpdate: Partial<ProgressStatus>) {
       this.loading = true;
       try {
         // Find the technique and its artist
@@ -124,8 +125,8 @@ export const useTechniqueStore = defineStore('technique', {
         await artistStore.updateArtist(artist);
 
         return artistTechnique;
-      } catch (error: any) {
-        this.error = error.message;
+      } catch (error: unknown) {
+        this.error = error instanceof Error ? error.message : String(error);
         throw error;
       } finally {
         this.loading = false;
