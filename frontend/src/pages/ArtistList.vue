@@ -285,9 +285,7 @@
                           label
                           label-always
                           markers
-                          marker-labels
-                          :marker-labels-class="markerLabelsClass"
-                          class="q-mt-xl"
+                          class="q-mt-xl marker-labels"
                         />
                       </div>
 
@@ -379,22 +377,33 @@
                       <div class="col-12">
                         <p class="text-subtitle2 q-mb-sm">Settings</p>
 
-                        <div v-for="(value, key, i) in gear.settings" :key="i" class="row q-col-gutter-sm q-mb-xs">
+                        <div
+                          v-for="(_, i) in (settingKeys[index] || [])"
+                          :key="i"
+                          class="row q-col-gutter-sm q-mb-xs"
+                        >
                           <div class="col-5">
                             <q-input
                               v-model="settingKeys[index][i]"
                               label="Parameter"
                               outlined
                               dense
-                              @update:model-value="updateGearSettingKey(index, i, key)"
+                              @update:model-value="updateGearSettingKey(index, i)"
                             />
                           </div>
                           <div class="col-5">
                             <q-input
+                              v-if="settingKeys[index] && settingKeys[index][i]"
                               v-model="gear.settings[settingKeys[index][i]]"
                               label="Value"
                               outlined
                               dense
+                            />
+                            <q-input v-else
+                                     label="Value"
+                                     outlined
+                                     dense
+                                     disable
                             />
                           </div>
                           <div class="col-2 flex items-center">
@@ -404,7 +413,7 @@
                               color="negative"
                               icon="remove"
                               size="sm"
-                              @click="removeGearSetting(index, key)"
+                              @click="removeGearSetting(index, i)"
                             />
                           </div>
                         </div>
@@ -475,8 +484,6 @@
     </q-dialog>
   </q-page>
 </template>
-
-// Replace the script section in src/pages/ArtistList.vue
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
@@ -568,21 +575,6 @@ const filteredArtists = computed(() => {
 
     return true;
   });
-});
-
-interface MarkerLabels {
-  [key: string]: string;
-}
-
-// Marker labels for difficulty slider
-const markerLabelsClass = computed<MarkerLabels>(() => {
-  return {
-    1: 'text-green',
-    2: 'text-light-green',
-    3: 'text-amber',
-    4: 'text-orange',
-    5: 'text-red'
-  };
 });
 
 onMounted(async () => {
@@ -711,46 +703,50 @@ function addGearSetting(gearIndex: number): void {
   const gear = editedArtist.value.gear_settings[gearIndex];
   if (!gear) return;
 
-  const gearSettings = gear.settings || {};
-  const newKey = `setting${Object.keys(gearSettings).length + 1}`;
+  if (!settingKeys.value[gearIndex]) {
+    settingKeys.value[gearIndex] = [];
+  }
+
+  const newKey = `setting${settingKeys.value[gearIndex].length + 1}`;
+  settingKeys.value[gearIndex].push(newKey);
 
   if (!gear.settings) {
     gear.settings = {};
   }
-
   gear.settings[newKey] = '';
-
-  if (!settingKeys.value[gearIndex]) {
-    settingKeys.value[gearIndex] = [];
-  }
-  settingKeys.value[gearIndex].push(newKey);
 }
 
-function removeGearSetting(gearIndex: number, key: string): void {
-  if (settingKeys.value[gearIndex]) {
-    const keyIndex = settingKeys.value[gearIndex].indexOf(key);
-    if (keyIndex !== -1) {
-      settingKeys.value[gearIndex].splice(keyIndex, 1);
-    }
-  }
+function removeGearSetting(gearIndex: number, keyIndex: number): void {
+  if (!settingKeys.value[gearIndex]) return;
 
+  const key = settingKeys.value[gearIndex][keyIndex];
   const gear = editedArtist.value.gear_settings[gearIndex];
-  if (gear && gear.settings) {
+
+  if (gear && gear.settings && key) {
     delete gear.settings[key];
   }
+
+  settingKeys.value[gearIndex].splice(keyIndex, 1);
 }
 
-function updateGearSettingKey(gearIndex: number, keyIndex: number, oldKey: string): void {
+function updateGearSettingKey(gearIndex: number, keyIndex: number): void {
   if (!settingKeys.value[gearIndex]) return;
 
   const newKey = settingKeys.value[gearIndex][keyIndex];
-  const gear = editedArtist.value.gear_settings[gearIndex];
+  const oldKeys = Object.keys(editedArtist.value.gear_settings[gearIndex].settings || {});
 
-  if (newKey && newKey !== oldKey && oldKey && gear && gear.settings) {
-    const value = gear.settings[oldKey];
-    if (value !== undefined) {
-      gear.settings[newKey] = value;
-      delete gear.settings[oldKey];
+  // Find the old key that's not in the current settingKeys array
+  const oldKey = oldKeys.find(k => !settingKeys.value[gearIndex].includes(k) ||
+    (settingKeys.value[gearIndex].indexOf(k) !== keyIndex));
+
+  if (oldKey && newKey && oldKey !== newKey) {
+    const gear = editedArtist.value.gear_settings[gearIndex];
+    if (gear && gear.settings) {
+      const value = gear.settings[oldKey];
+      if (value !== undefined) {
+        gear.settings[newKey] = value;
+        delete gear.settings[oldKey];
+      }
     }
   }
 }
@@ -803,5 +799,23 @@ async function saveArtist(): Promise<void> {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.marker-labels {
+  [data-v-marker="1"] {
+    color: var(--q-green);
+  }
+  [data-v-marker="2"] {
+    color: var(--q-light-green);
+  }
+  [data-v-marker="3"] {
+    color: var(--q-amber);
+  }
+  [data-v-marker="4"] {
+    color: var(--q-orange);
+  }
+  [data-v-marker="5"] {
+    color: var(--q-red);
+  }
 }
 </style>
