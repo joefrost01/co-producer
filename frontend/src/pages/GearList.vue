@@ -259,7 +259,7 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { useGearStore } from 'src/stores/gear-store';
-import { GearItem } from 'src/models/gear';
+import type { GearItem } from 'src/models/gear';
 
 const $q = useQuasar();
 const gearStore = useGearStore();
@@ -411,11 +411,11 @@ function removeSetting(key: string) {
   delete editedGear.value.settings[key];
 }
 
-function updateSettingKey(index: number, oldKey: string, newKeyValue?: string): void {
+function updateSettingKey(index: number, oldKey: string): void {
   const newKey = settingKeys.value[index];
   if (newKey && newKey !== oldKey && oldKey) {
     const value = editedGear.value.settings[oldKey];
-    if (typeof newKey === 'string') {
+    if (value !== undefined) {
       editedGear.value.settings[newKey] = value;
       delete editedGear.value.settings[oldKey];
     }

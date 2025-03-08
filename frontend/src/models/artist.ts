@@ -1,6 +1,6 @@
-import type { Technique } from 'src/models/technique'
-import type { GearSetting } from 'src/models/gear'
-import type { Media } from 'src/models/common'
+import { Technique } from './technique';
+import { GearSetting } from './gear';
+import { Media } from './common';
 
 export interface Artist {
   id: string;
@@ -9,7 +9,7 @@ export interface Artist {
   era?: string;
   description: string;
   instrument: string;
-  difficulty: string;
+  difficulty: string; // 'easy', 'moderate', 'challenging'
   tags: string[];
   techniques: Technique[];
   gear_settings: GearSetting[];

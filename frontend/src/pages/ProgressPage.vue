@@ -714,38 +714,47 @@ function viewTechniqueDetails(technique: Technique): void {
 }
 
 function addToLearningPlan(technique: Technique): void {
-  selectedTechnique.value = { ...technique };
+  selectedTechnique.value = technique;
   learningPlan.technique_id = technique.id;
-  const targetDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14);
-  const dateStr = targetDate.toISOString().split('T')[0];
+
+  // Create a date 2 weeks from now
+  const futureDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14);
+  // Format date as YYYY-MM-DD
+  const dateStr = futureDate.toISOString().split('T')[0];
+
   if (dateStr) {
-    learningPlan.target_date = dateStr; // Set default date to 2 weeks from now
+    learningPlan.target_date = dateStr;
+    learningPlan.notes = '';
+    learningPlan.priority = 'medium';
+    planDialog.value = true;
   }
-  planDialog.value = true;
 }
 
-async function saveLearningPlan(): Promise<void> {
-  try {
-    // Since progressStore.addToLearningPlan doesn't return a promise, we don't need to await it
-    // Using void to explicitly show we're ignoring any promise return value
-    void progressStore.addToLearningPlan(learningPlan);
+function saveLearningPlan(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      // Since progressStore.addToLearningPlan doesn't return a promise, we don't need to await it
+      progressStore.addToLearningPlan(learningPlan);
 
-    $q.notify({
-      color: 'positive',
-      position: 'top',
-      message: 'Technique added to learning plan',
-      icon: 'check'
-    });
+      $q.notify({
+        color: 'positive',
+        position: 'top',
+        message: 'Technique added to learning plan',
+        icon: 'check'
+      });
 
-    planDialog.value = false;
-  } catch (error) {
-    $q.notify({
-      color: 'negative',
-      position: 'top',
-      message: 'Failed to add technique to learning plan',
-      icon: 'report_problem'
-    });
-  }
+      planDialog.value = false;
+      resolve();
+    } catch (error) {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'Failed to add technique to learning plan',
+        icon: 'report_problem'
+      });
+      reject(error);
+    }
+  });
 }
 </script>
 

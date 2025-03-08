@@ -8,7 +8,7 @@ interface FormOptions {
 export function useForm<T extends Record<string, unknown>>(
   initialValues: T,
   saveFunction: (data: T) => Promise<unknown>,
-  options = { resetAfterSave: true }
+  options: FormOptions = { resetAfterSave: true }
 ) {
   const $q = useQuasar();
   const formData = ref<T>({ ...initialValues });
@@ -46,4 +46,6 @@ export function useForm<T extends Record<string, unknown>>(
       loading.value = false;
     }
   };
+
+  return { formData, loading, handleSubmit };
 }

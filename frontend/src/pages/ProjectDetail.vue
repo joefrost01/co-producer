@@ -401,8 +401,9 @@ async function generateBriefing(): Promise<void> {
 }
 
 // Add type to function parameter
-function copyToClipboard(text: string): void {
-  navigator.clipboard.writeText(text).then(() => {
+async function copyToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
     $q.notify({
       color: 'positive',
       position: 'top',
@@ -410,7 +411,14 @@ function copyToClipboard(text: string): void {
       icon: 'check',
       timeout: 1000
     });
-  });
+  } catch (error) {
+    $q.notify({
+      color: 'negative',
+      position: 'top',
+      message: 'Failed to copy to clipboard',
+      icon: 'report_problem'
+    });
+  }
 }
 
 // Add type to function parameter

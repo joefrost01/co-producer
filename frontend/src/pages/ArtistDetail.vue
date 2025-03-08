@@ -665,16 +665,19 @@ function addToLearningPlan(technique: Technique): void {
   // Format date as YYYY-MM-DD
   const dateStr = futureDate.toISOString().split('T')[0];
 
-  learningPlan.target_date = dateStr;
-  learningPlan.notes = '';
-  learningPlan.priority = 'medium';
-  planDialog.value = true;
+  if (dateStr) {
+    learningPlan.target_date = dateStr;
+    learningPlan.notes = '';
+    learningPlan.priority = 'medium';
+    planDialog.value = true;
+  }
 }
 
 async function saveLearningPlan(): Promise<void> {
   try {
     // We don't need to await this since it doesn't return a promise
-    progressStore.addToLearningPlan(learningPlan);
+    // Using void to explicitly show we're ignoring any promise return value
+    void progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',

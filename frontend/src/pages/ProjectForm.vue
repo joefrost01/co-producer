@@ -295,7 +295,7 @@ onMounted(async () => {
       Object.assign(formData.value, projectData);
 
       // Set selected values for dropdowns
-      selectedArtists.value = formData.value.collaborators.map(id => {
+      selectedArtists.value = formData.value.collaborators.map((id: string) => {
         const artist = artistStore.getArtistById(id);
         return {
           label: artist?.name || id,
@@ -303,7 +303,7 @@ onMounted(async () => {
         };
       });
 
-      selectedGear.value = formData.value.equipment.map(id => {
+      selectedGear.value = formData.value.equipment.map((id: string) => {
         const gear = gearStore.getGearById(id);
         return {
           label: gear?.gear_name || id,
@@ -411,7 +411,8 @@ async function generateBriefing() {
       icon: 'check'
     });
 
-    router.push(`/projects/${formData.value.id}/briefing`);
+    // Use await here
+    await router.push(`/projects/${formData.value.id}/briefing`);
   } catch (error) {
     $q.loading.hide();
     $q.notify({

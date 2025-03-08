@@ -380,7 +380,7 @@
 import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'src/stores/settings-store';
-import { Settings } from 'src/models/settings';
+import type { Settings } from 'src/models/settings';
 
 const $q = useQuasar();
 const settingsStore = useSettingsStore();
@@ -592,7 +592,7 @@ function openRestoreDialog() {
   restoreDialog.value = true;
 }
 
-async function restoreFromFile() {
+async function restoreFromFile(): Promise<void> {
   if (!backupFile.value) return;
 
   try {
@@ -600,52 +600,58 @@ async function restoreFromFile() {
 
     const reader = new FileReader();
 
-    reader.onload = async (e) => {
-      try {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          const backupData = JSON.parse(result);
-          await settingsStore.restoreBackup(backupData);
+    return new Promise<void>((resolve, reject) => {
+      reader.onload = async (e) => {
+        try {
+          const result = e.target?.result;
+          if (typeof result === 'string') {
+            const backupData = JSON.parse(result);
+            await settingsStore.restoreBackup(backupData);
 
+            $q.notify({
+              color: 'positive',
+              position: 'top',
+              message: 'Data restored successfully',
+              icon: 'check'
+            });
+
+            // Close dialog
+            restoreDialog.value = false;
+
+            // Reload page to reflect changes
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+
+            resolve();
+          }
+        } catch (parseError) {
           $q.notify({
-            color: 'positive',
+            color: 'negative',
             position: 'top',
-            message: 'Data restored successfully',
-            icon: 'check'
+            message: 'Invalid backup file format',
+            icon: 'report_problem'
           });
-
-          // Close dialog
-          restoreDialog.value = false;
-
-          // Reload page to reflect changes
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+          reject(parseError);
+        } finally {
+          restoring.value = false;
         }
-      } catch (parseError) {
+      };
+
+      reader.onerror = () => {
         $q.notify({
           color: 'negative',
           position: 'top',
-          message: 'Invalid backup file format',
+          message: 'Failed to read backup file',
           icon: 'report_problem'
         });
-      } finally {
         restoring.value = false;
-      }
-    };
+        reject(new Error('Failed to read backup file'));
+      };
 
-    reader.onerror = () => {
-      $q.notify({
-        color: 'negative',
-        position: 'top',
-        message: 'Failed to read backup file',
-        icon: 'report_problem'
-      });
-      restoring.value = false;
-    };
-
-    reader.readAsText(backupFile.value);
-  } catch {
+      reader.readAsText(backupFile.value);
+    });
+  } catch (error) {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -653,6 +659,7 @@ async function restoreFromFile() {
       icon: 'report_problem'
     });
     restoring.value = false;
+    throw error;
   }
 }
 
@@ -687,45 +694,52 @@ function downloadBackup(backup: BackupHistoryItem) {
   });
 }
 
-async function restoreBackup(backup: BackupHistoryItem) {
+async function restoreBackup(backup: BackupHistoryItem): Promise<void> {
   // In a real app, this would fetch the backup file from the server and restore it
   // For this example, we'll just show a notification
 
-  $q.dialog({
-    title: 'Restore backup?',
-    message: `Are you sure you want to restore the backup from ${formatDate(backup.date)}?`,
-    cancel: true,
-    persistent: true
-  }).onOk(async () => {
-    try {
-      $q.loading.show({
-        message: 'Restoring backup...'
-      });
+  return new Promise<void>((resolve, reject) => {
+    $q.dialog({
+      title: 'Restore backup?',
+      message: `Are you sure you want to restore the backup from ${formatDate(backup.date)}?`,
+      cancel: true,
+      persistent: true
+    }).onOk(async () => {
+      try {
+        $q.loading.show({
+          message: 'Restoring backup...'
+        });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
-      $q.loading.hide();
-      $q.notify({
-        color: 'positive',
-        position: 'top',
-        message: 'Backup restored successfully',
-        icon: 'check'
-      });
+        $q.loading.hide();
+        $q.notify({
+          color: 'positive',
+          position: 'top',
+          message: 'Backup restored successfully',
+          icon: 'check'
+        });
 
-      // Reload page to reflect changes
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch {
-      $q.loading.hide();
-      $q.notify({
-        color: 'negative',
-        position: 'top',
-        message: 'Failed to restore backup',
-        icon: 'report_problem'
-      });
-    }
+        // Reload page to reflect changes
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+
+        resolve();
+      } catch (error) {
+        $q.loading.hide();
+        $q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'Failed to restore backup',
+          icon: 'report_problem'
+        });
+        reject(error);
+      }
+    }).onCancel(() => {
+      resolve();
+    });
   });
 }
 

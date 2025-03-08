@@ -705,6 +705,8 @@ function removeGear(index: number): void {
 
 function addGearSetting(gearIndex: number): void {
   const gear = editedArtist.value.gear_settings[gearIndex];
+  if (!gear) return;
+
   const gearSettings = gear.settings || {};
   const newKey = `setting${Object.keys(gearSettings).length + 1}`;
 
@@ -742,8 +744,10 @@ function updateGearSettingKey(gearIndex: number, keyIndex: number, oldKey: strin
 
   if (newKey && newKey !== oldKey && oldKey && gear && gear.settings) {
     const value = gear.settings[oldKey];
-    gear.settings[newKey] = value;
-    delete gear.settings[oldKey];
+    if (value !== undefined) {
+      gear.settings[newKey] = value;
+      delete gear.settings[oldKey];
+    }
   }
 }
 

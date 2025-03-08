@@ -199,8 +199,8 @@ import { useProjectStore } from 'src/stores/project-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useProgressStore } from 'src/stores/progress-store';
-import { Project } from 'src/models/project';
-import { Technique } from 'src/models/technique';
+import type { Project } from 'src/models/project';
+import type { Technique } from 'src/models/technique';
 
 interface ActivityItem {
   id: number;

@@ -648,7 +648,7 @@ function loadTechnique(id: string): Promise<void> {
       });
       void router.push('/techniques');
       loading.value = false;
-      reject(error);
+      reject(new Error(`Failed to load technique: ${error instanceof Error ? error.message : String(error)}`));
     }
   });
 }
@@ -765,7 +765,7 @@ function saveLearningPlan(): Promise<void> {
       message: 'Failed to add technique to learning plan',
       icon: 'report_problem'
     });
-    return Promise.reject(error);
+    return Promise.reject(new Error(`Failed to add technique to learning plan: ${error instanceof Error ? error.message : String(error)}`));
   }
 }
 
