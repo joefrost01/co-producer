@@ -413,7 +413,7 @@ async function generateBriefing() {
 
     // Use await here
     await router.push(`/projects/${formData.value.id}/briefing`);
-  } catch (error) {
+  } catch {
     $q.loading.hide();
     $q.notify({
       color: 'negative',

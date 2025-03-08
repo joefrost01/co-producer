@@ -123,7 +123,8 @@ export const useProgressStore = defineStore('progress', {
     },
 
     // Remove async since there's no await operation
-    addToLearningPlan(plan: Partial<LearningPlanItem>): Promise<LearningPlanItem> {
+// Since we're returning a Promise<LearningPlanItem>, we need to make this async
+    async addToLearningPlan(plan: Partial<LearningPlanItem>): Promise<LearningPlanItem> {
       this.loading = true;
       try {
         // In a real application, this would call an API
@@ -158,7 +159,8 @@ export const useProgressStore = defineStore('progress', {
           }
         }
 
-        return newPlan;
+        // Use Promise.resolve to ensure we return a Promise<LearningPlanItem>
+        return Promise.resolve(newPlan);
       } catch (error: unknown) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         throw error;

@@ -34,7 +34,7 @@ export function useForm<T extends Record<string, unknown>>(
       }
 
       return true;
-    } catch (_error) {
+    } catch {
       $q.notify({
         color: 'negative',
         position: 'top',

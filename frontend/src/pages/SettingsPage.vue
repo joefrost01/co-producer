@@ -715,14 +715,14 @@ async function restoreBackup(backup: BackupHistoryItem): Promise<void> {
       message: `Are you sure you want to restore the backup from ${formatDate(backup.date)}?`,
       cancel: true,
       persistent: true
-    }).onOk(() => {
+    }).onOk( () => {
       try {
         $q.loading.show({
           message: 'Restoring backup...'
         });
 
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        //await new Promise(resolve => setTimeout(resolve, 1500))
 
         $q.loading.hide();
         $q.notify({
