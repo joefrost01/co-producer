@@ -1,9 +1,9 @@
 export interface ProgressStatus {
   status: string; // 'NotStarted', 'InProgress', 'Mastered'
-  started_at?: string;
-  completed_at?: string;
-  notes?: string;
-  updated_at?: string;
+  started_at?: string | undefined;
+  completed_at?: string | undefined;
+  notes?: string | undefined;
+  updated_at?: string | undefined;
 }
 
 export interface LearningPlanItem {

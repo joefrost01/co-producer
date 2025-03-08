@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useTechniqueStore } from './technique-store';
 import type { LearningPlanItem, ActivityItem } from 'src/models';
 import type { ProgressStatus } from 'src/models/progress';
-import type { Technique } from 'src/models/technique';
 
 const API_URL = '/api';
 
@@ -76,7 +75,7 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
-    async updateTechniqueProgress(techniqueId: string, progressUpdate: Partial<ProgressStatus>) {
+    updateTechniqueProgress(techniqueId: string, progressUpdate: Partial<ProgressStatus>) {
       this.loading = true;
       try {
         // Update technique in the technique store first
@@ -89,8 +88,9 @@ export const useProgressStore = defineStore('progress', {
           throw new Error(`Technique with ID ${techniqueId} not found`);
         }
 
-        // Call the update method but don't await since it's no longer async
-        techniqueStore.updateTechniqueProgress(techniqueId, progressUpdate);
+        // Handle the floating promise by using void operator
+        // This explicitly marks that we're ignoring the promise
+        void techniqueStore.updateTechniqueProgress(techniqueId, progressUpdate);
 
         // Now update our local progress data
         this.progressData[techniqueId] = {
@@ -107,8 +107,8 @@ export const useProgressStore = defineStore('progress', {
           technique_name: technique.name,
           artist_id: technique.artist_id,
           artist_name: technique.artist_name || 'Unknown Artist',
-          status: progressUpdate.status || undefined,
-          notes: progressUpdate.notes // Already optional in the interface
+          ...(progressUpdate.status ? { status: progressUpdate.status } : {}),
+          ...(progressUpdate.notes ? { notes: progressUpdate.notes } : {})
         };
 
         this.addActivity(activityItem);
@@ -149,8 +149,9 @@ export const useProgressStore = defineStore('progress', {
               plan_id: newPlan.id,
               technique_id: technique.id,
               technique_name: technique.name,
-              target_date: plan.target_date,
-              priority: plan.priority
+              // Use nullish coalescing or conditional property adding
+              ...(plan.target_date ? { target_date: plan.target_date } : {}),
+              ...(plan.priority ? { priority: plan.priority } : {})
             };
 
             this.addActivity(activityItem);
@@ -206,7 +207,8 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
-    async completeLearningPlanItem(id: string) {
+// Fix for the async/await consistency in completeLearningPlanItem
+    completeLearningPlanItem(id: string) {
       this.loading = true;
       try {
         const planItem = this.learningPlan.find(item => item.id === id);
@@ -217,7 +219,8 @@ export const useProgressStore = defineStore('progress', {
 
         // Update technique progress to Mastered
         if (planItem.technique_id) {
-          await this.updateTechniqueProgress(planItem.technique_id, {
+          // Since updateTechniqueProgress is no longer async, we don't need to await it
+          this.updateTechniqueProgress(planItem.technique_id, {
             status: 'Mastered',
             notes: 'Completed from learning plan'
           });

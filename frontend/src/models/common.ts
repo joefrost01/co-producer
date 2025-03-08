@@ -13,11 +13,11 @@ export interface ActivityItem {
   technique_name?: string;
   artist_id?: string;
   artist_name?: string;
-  status?: string;
-  notes?: string;
+  status?: string | undefined;  // Make explicitly optional with undefined
+  notes?: string | undefined;   // Make explicitly optional with undefined
   plan_id?: string;
-  target_date?: string;
-  priority?: string;
+  target_date?: string | undefined;  // Make explicitly optional with undefined
+  priority?: string | undefined;     // Make explicitly optional with undefined
 }
 
 export interface ColumnDefinition {

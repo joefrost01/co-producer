@@ -118,6 +118,8 @@ export const useTechniqueStore = defineStore('technique', {
         artistTechnique.progress = {
           ...artistTechnique.progress,
           ...progressUpdate,
+          // Make sure status is always defined - use existing value or default to current status
+          status: progressUpdate.status ?? artistTechnique.progress?.status ?? 'NotStarted',
           updated_at: new Date().toISOString()
         };
 
