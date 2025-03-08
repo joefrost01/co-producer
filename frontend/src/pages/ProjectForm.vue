@@ -15,15 +15,17 @@
 
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-8">
-        <q-form @submit="onSubmit" class="q-gutter-md">
-          <q-card>
-            <q-card-section>
+        <q-form @submit="handleSubmit" class="q-gutter-md">
+          <EntityCard>
+            <template #header>
               <div class="text-h6 q-mb-md">Project Details</div>
+            </template>
 
+            <template #content>
               <div class="row q-col-gutter-md">
                 <div class="col-12">
                   <q-input
-                    v-model="project.title"
+                    v-model="formData.title"
                     label="Project Title *"
                     :rules="[val => !!val || 'Title is required']"
                     outlined
@@ -33,7 +35,7 @@
 
                 <div class="col-12">
                   <q-input
-                    v-model="project.description"
+                    v-model="formData.description"
                     label="Description"
                     type="textarea"
                     rows="3"
@@ -41,13 +43,15 @@
                   />
                 </div>
               </div>
-            </q-card-section>
-          </q-card>
+            </template>
+          </EntityCard>
 
-          <q-card>
-            <q-card-section>
+          <EntityCard>
+            <template #header>
               <div class="text-h6 q-mb-md">Creative Direction</div>
+            </template>
 
+            <template #content>
               <div class="row q-col-gutter-md">
                 <div class="col-12">
                   <q-select
@@ -94,7 +98,7 @@
 
                   <div class="q-mt-sm">
                     <q-chip
-                      v-for="(directive, index) in project.creative_directives"
+                      v-for="(directive, index) in formData.creative_directives"
                       :key="index"
                       removable
                       @remove="removeDirective(index)"
@@ -107,17 +111,19 @@
                   </div>
                 </div>
               </div>
-            </q-card-section>
-          </q-card>
+            </template>
+          </EntityCard>
 
-          <q-card>
-            <q-card-section>
+          <EntityCard>
+            <template #header>
               <div class="text-h6 q-mb-md">Production Notes</div>
+            </template>
 
+            <template #content>
               <div class="row q-col-gutter-md">
                 <div class="col-12">
                   <q-input
-                    v-model="project.workflow_notes"
+                    v-model="formData.workflow_notes"
                     label="Workflow Notes"
                     type="textarea"
                     rows="4"
@@ -126,9 +132,9 @@
                   />
                 </div>
               </div>
-            </q-card-section>
+            </template>
 
-            <q-card-actions align="right">
+            <template #actions>
               <q-btn
                 label="Cancel"
                 to="/projects"
@@ -140,19 +146,20 @@
                 type="submit"
                 color="primary"
                 unelevated
+                :loading="loading"
               />
-            </q-card-actions>
-          </q-card>
+            </template>
+          </EntityCard>
         </q-form>
       </div>
 
       <div class="col-12 col-md-4">
-        <q-card>
-          <q-card-section>
+        <EntityCard>
+          <template #header>
             <div class="text-h6">Project Assistant</div>
-          </q-card-section>
+          </template>
 
-          <q-card-section>
+          <template #content>
             <p class="text-body1">
               {{ isEditing ? 'Update your project details to refine AI collaboration.' : 'Define your project to start collaborating with AI.' }}
             </p>
@@ -198,9 +205,9 @@
                 </q-item-section>
               </q-item>
             </q-list>
-          </q-card-section>
+          </template>
 
-          <q-card-section v-if="isEditing">
+          <template #actions v-if="isEditing">
             <q-btn
               color="secondary"
               class="full-width"
@@ -209,8 +216,8 @@
               unelevated
               @click="generateBriefing"
             />
-          </q-card-section>
-        </q-card>
+          </template>
+        </EntityCard>
       </div>
     </div>
   </q-page>
@@ -223,6 +230,10 @@ import { useQuasar } from 'quasar';
 import { useProjectStore } from 'src/stores/project-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useGearStore } from 'src/stores/gear-store';
+import { useForm } from 'src/composables/useForm';
+import EntityCard from 'src/components/common/EntityCard.vue';
+import type { Project } from 'src/models/project';
+import type { SelectOption } from 'src/models/common';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -231,7 +242,16 @@ const projectStore = useProjectStore();
 const artistStore = useArtistStore();
 const gearStore = useGearStore();
 
-const project = ref({
+const newDirective = ref('');
+const selectedArtists = ref<SelectOption[]>([]);
+const selectedGear = ref<SelectOption[]>([]);
+const artistOptions = ref<SelectOption[]>([]);
+const gearOptions = ref<SelectOption[]>([]);
+
+const isEditing = computed(() => !!route.params.id);
+
+// Initialize form with default project structure
+const defaultProject: Project = {
   id: '',
   title: '',
   description: '',
@@ -240,16 +260,17 @@ const project = ref({
   creative_directives: [],
   workflow_notes: '',
   created_at: '',
-  updated_at: ''
-});
+  updated_at: '',
+  has_briefing: false,
+  tags: []
+};
 
-const selectedArtists = ref([]);
-const selectedGear = ref([]);
-const artistOptions = ref([]);
-const gearOptions = ref([]);
-const newDirective = ref('');
-
-const isEditing = computed(() => !!route.params.id);
+// Use the form composable
+const { formData, loading, handleSubmit } = useForm<Project>(
+  defaultProject,
+  saveProject,
+  { resetAfterSave: false }
+);
 
 onMounted(async () => {
   try {
@@ -271,10 +292,10 @@ onMounted(async () => {
     // If editing, load project data
     if (isEditing.value) {
       const projectData = await projectStore.fetchProject(route.params.id as string);
-      project.value = { ...projectData };
+      Object.assign(formData.value, projectData);
 
       // Set selected values for dropdowns
-      selectedArtists.value = project.value.collaborators.map(id => {
+      selectedArtists.value = formData.value.collaborators.map(id => {
         const artist = artistStore.getArtistById(id);
         return {
           label: artist?.name || id,
@@ -282,7 +303,7 @@ onMounted(async () => {
         };
       });
 
-      selectedGear.value = project.value.equipment.map(id => {
+      selectedGear.value = formData.value.equipment.map(id => {
         const gear = gearStore.getGearById(id);
         return {
           label: gear?.gear_name || id,
@@ -300,7 +321,7 @@ onMounted(async () => {
   }
 });
 
-function filterArtists(val, update) {
+function filterArtists(val: string, update: (fn: () => void) => void) {
   if (val === '') {
     update(() => {
       artistOptions.value = artistStore.artists.map(artist => ({
@@ -314,7 +335,7 @@ function filterArtists(val, update) {
   update(() => {
     const needle = val.toLowerCase();
     artistOptions.value = artistStore.artists
-      .filter(artist => artist.name.toLowerCase().indexOf(needle) > -1)
+      .filter(artist => artist.name.toLowerCase().includes(needle))
       .map(artist => ({
         label: artist.name,
         value: artist.id
@@ -324,23 +345,25 @@ function filterArtists(val, update) {
 
 function addCreativeDirective() {
   if (newDirective.value.trim() !== '') {
-    project.value.creative_directives.push(newDirective.value.trim());
+    formData.value.creative_directives.push(newDirective.value.trim());
     newDirective.value = '';
   }
 }
 
-function removeDirective(index) {
-  project.value.creative_directives.splice(index, 1);
+function removeDirective(index: number) {
+  formData.value.creative_directives.splice(index, 1);
 }
 
-async function onSubmit() {
+async function saveProject(project: Project): Promise<Project> {
+  // Map selected values back to IDs for saving
+  project.collaborators = selectedArtists.value.map(item => item.value as string);
+  project.equipment = selectedGear.value.map(item => item.value as string);
+
   try {
-    // Map selected values back to IDs for saving
-    project.value.collaborators = selectedArtists.value.map(item => item.value);
-    project.value.equipment = selectedGear.value.map(item => item.value);
+    let savedProject: Project;
 
     if (isEditing.value) {
-      await projectStore.updateProject(project.value);
+      savedProject = await projectStore.updateProject(project);
       $q.notify({
         color: 'positive',
         position: 'top',
@@ -348,15 +371,17 @@ async function onSubmit() {
         icon: 'check'
       });
     } else {
-      const newProject = await projectStore.createProject(project.value);
+      savedProject = await projectStore.createProject(project);
       $q.notify({
         color: 'positive',
         position: 'top',
         message: 'Project created successfully',
         icon: 'check'
       });
-      router.push(`/projects/${newProject.id}`);
+      router.push(`/projects/${savedProject.id}`);
     }
+
+    return savedProject;
   } catch (error) {
     $q.notify({
       color: 'negative',
@@ -364,6 +389,7 @@ async function onSubmit() {
       message: isEditing.value ? 'Failed to update project' : 'Failed to create project',
       icon: 'report_problem'
     });
+    throw error;
   }
 }
 
@@ -375,7 +401,7 @@ async function generateBriefing() {
       message: 'Generating project briefing...'
     });
 
-    await projectStore.generateBriefing(project.value.id);
+    await projectStore.generateBriefing(formData.value.id);
 
     $q.loading.hide();
     $q.notify({
@@ -385,7 +411,7 @@ async function generateBriefing() {
       icon: 'check'
     });
 
-    router.push(`/projects/${project.value.id}/briefing`);
+    router.push(`/projects/${formData.value.id}/briefing`);
   } catch (error) {
     $q.loading.hide();
     $q.notify({

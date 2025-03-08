@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import { useTechniqueStore } from './technique-store';
+import { LearningPlanItem, ActivityItem } from 'src/models';
 
 const API_URL = '/api';
 
@@ -8,29 +9,6 @@ interface ProgressData {
   [key: string]: any;
 }
 
-interface LearningPlanItem {
-  id: string;
-  technique_id: string;
-  target_date: string;
-  notes?: string;
-  priority?: string;
-  created_at?: string;
-}
-
-interface ActivityItem {
-  id?: string;
-  type?: string;
-  timestamp: string;
-  technique_id?: string;
-  technique_name?: string;
-  artist_id?: string;
-  artist_name?: string;
-  status?: string;
-  notes?: string;
-  plan_id?: string;
-  target_date?: string;
-  priority?: string;
-}
 
 export const useProgressStore = defineStore('progress', {
   state: () => ({

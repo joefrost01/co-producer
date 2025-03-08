@@ -51,8 +51,8 @@
       <div class="row q-col-gutter-md">
         <!-- Artist details -->
         <div class="col-12 col-md-4">
-          <q-card flat bordered>
-            <q-card-section>
+          <EntityCard>
+            <template #header>
               <div class="text-h6">About</div>
               <p>{{ artist.description }}</p>
 
@@ -75,9 +75,9 @@
                 />
                 <span class="q-ml-sm">{{ formatDifficulty(artist.difficulty) }}</span>
               </div>
+            </template>
 
-              <q-separator class="q-my-md" />
-
+            <template #content>
               <div class="text-subtitle2 q-mb-sm">Tags</div>
               <div v-if="artist.tags && artist.tags.length">
                 <q-chip
@@ -91,14 +91,16 @@
                 </q-chip>
               </div>
               <div v-else class="text-grey">No tags added</div>
-            </q-card-section>
-          </q-card>
+            </template>
+          </EntityCard>
 
           <!-- Gear settings card -->
-          <q-card flat bordered class="q-mt-md">
-            <q-card-section>
+          <EntityCard class="q-mt-md">
+            <template #header>
               <div class="text-h6">Gear Settings</div>
+            </template>
 
+            <template #content>
               <div v-if="!artist.gear_settings || artist.gear_settings.length === 0" class="text-center q-py-lg">
                 <q-icon name="settings" size="48px" color="grey-5" />
                 <p class="text-body1 q-mt-sm">No gear settings defined for this artist</p>
@@ -135,14 +137,16 @@
                   </q-card>
                 </q-expansion-item>
               </div>
-            </q-card-section>
-          </q-card>
+            </template>
+          </EntityCard>
 
           <!-- Media card -->
-          <q-card flat bordered class="q-mt-md" v-if="artist.media && artist.media.length">
-            <q-card-section>
+          <EntityCard class="q-mt-md" v-if="artist.media && artist.media.length">
+            <template #header>
               <div class="text-h6">Media</div>
+            </template>
 
+            <template #content>
               <q-list>
                 <q-item v-for="(item, index) in artist.media" :key="index">
                   <q-item-section avatar>
@@ -171,14 +175,14 @@
                   </q-item-section>
                 </q-item>
               </q-list>
-            </q-card-section>
-          </q-card>
+            </template>
+          </EntityCard>
         </div>
 
         <!-- Techniques section -->
         <div class="col-12 col-md-8">
-          <q-card flat bordered>
-            <q-card-section>
+          <EntityCard>
+            <template #header>
               <div class="row justify-between items-center">
                 <div class="text-h6">Techniques</div>
                 <q-btn
@@ -189,50 +193,56 @@
                   @click="showFilter = !showFilter"
                 />
               </div>
+            </template>
 
+            <template #content>
               <!-- Filter options -->
               <div v-if="showFilter" class="q-py-md">
-                <div class="row q-col-gutter-md">
-                  <div class="col-12 col-sm-6">
-                    <q-input
-                      v-model="filter.search"
-                      label="Search techniques"
-                      outlined
-                      dense
-                      clearable
-                    >
-                      <template v-slot:append>
-                        <q-icon name="search" />
-                      </template>
-                    </q-input>
-                  </div>
+                <FilterPanel @reset="resetFilters">
+                  <template #filters>
+                    <div class="row q-col-gutter-md">
+                      <div class="col-12 col-sm-6">
+                        <q-input
+                          v-model="filter.search"
+                          label="Search techniques"
+                          outlined
+                          dense
+                          clearable
+                        >
+                          <template v-slot:append>
+                            <q-icon name="search" />
+                          </template>
+                        </q-input>
+                      </div>
 
-                  <div class="col-12 col-sm-6">
-                    <q-select
-                      v-model="filter.difficulty"
-                      :options="difficultyOptions"
-                      label="Difficulty"
-                      outlined
-                      dense
-                      clearable
-                      emit-value
-                      map-options
-                    />
-                  </div>
+                      <div class="col-12 col-sm-6">
+                        <q-select
+                          v-model="filter.difficulty"
+                          :options="difficultyOptions"
+                          label="Difficulty"
+                          outlined
+                          dense
+                          clearable
+                          emit-value
+                          map-options
+                        />
+                      </div>
 
-                  <div class="col-12 col-sm-6">
-                    <q-select
-                      v-model="filter.status"
-                      :options="statusOptions"
-                      label="Learning Status"
-                      outlined
-                      dense
-                      clearable
-                      emit-value
-                      map-options
-                    />
-                  </div>
-                </div>
+                      <div class="col-12 col-sm-6">
+                        <q-select
+                          v-model="filter.status"
+                          :options="statusOptions"
+                          label="Learning Status"
+                          outlined
+                          dense
+                          clearable
+                          emit-value
+                          map-options
+                        />
+                      </div>
+                    </div>
+                  </template>
+                </FilterPanel>
               </div>
 
               <!-- No techniques message -->
@@ -253,7 +263,7 @@
                   >
                     <template v-slot:header>
                       <q-item-section avatar>
-                        <q-avatar :color="getTechniqueColor(technique)" text-color="white">
+                        <q-avatar :color="getDifficultyColor(technique.difficulty)" text-color="white">
                           {{ technique.difficulty }}
                         </q-avatar>
                       </q-item-section>
@@ -264,9 +274,7 @@
                       </q-item-section>
 
                       <q-item-section side v-if="technique.progress">
-                        <q-badge :color="getProgressColor(technique.progress.status)">
-                          {{ formatProgressStatus(technique.progress.status) }}
-                        </q-badge>
+                        <StatusBadge :status="technique.progress.status" />
                       </q-item-section>
                     </template>
 
@@ -344,8 +352,8 @@
                   </q-expansion-item>
                 </q-list>
               </div>
-            </q-card-section>
-          </q-card>
+            </template>
+          </EntityCard>
         </div>
       </div>
     </div>
@@ -424,15 +432,22 @@ import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
+import { useConfirmation } from 'src/composables/useConfirmation';
+import EntityCard from 'src/components/common/EntityCard.vue';
+import StatusBadge from 'src/components/common/StatusBadge.vue';
+import FilterPanel from 'src/components/common/FilterPanel.vue';
+import { truncateText, getDifficultyColor } from 'src/lib/utils';
+import type { Artist, Technique, GearSetting, Media } from 'src/models';
 
 const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
 const artistStore = useArtistStore();
 const progressStore = useProgressStore();
+const { confirm } = useConfirmation();
 
 const loading = ref(true);
-const artist = ref({
+const artist = ref<Artist>({
   id: '',
   name: '',
   band: '',
@@ -582,48 +597,10 @@ function getMediaColor(type) {
   }
 }
 
-function getTechniqueColor(technique) {
-  // If technique is mastered, show green
-  if (technique.progress && technique.progress.status === 'Mastered') {
-    return 'positive';
-  }
-
-  // Otherwise color based on difficulty
-  return getDifficultyColor(technique.difficulty);
-}
-
-function getDifficultyColor(level) {
-  switch (parseInt(level)) {
-    case 1: return 'green';
-    case 2: return 'light-green';
-    case 3: return 'amber';
-    case 4: return 'orange';
-    case 5: return 'red';
-    default: return 'grey';
-  }
-}
-
-function getProgressColor(status) {
-  switch (status) {
-    case 'NotStarted': return 'grey';
-    case 'InProgress': return 'blue';
-    case 'Mastered': return 'positive';
-    default: return 'grey';
-  }
-}
-
-function formatProgressStatus(status) {
-  switch (status) {
-    case 'NotStarted': return 'Not Started';
-    case 'InProgress': return 'In Progress';
-    case 'Mastered': return 'Mastered';
-    default: return status;
-  }
-}
-
-function truncateText(text, maxLength) {
-  if (!text) return '';
-  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+function resetFilters() {
+  filter.search = '';
+  filter.difficulty = null;
+  filter.status = null;
 }
 
 function editArtist() {
@@ -650,7 +627,7 @@ async function updateProgress(techniqueId, status) {
     $q.notify({
       color: 'positive',
       position: 'top',
-      message: `Progress updated to ${formatProgressStatus(status)}`,
+      message: `Progress updated to ${status === 'NotStarted' ? 'Not Started' : status === 'InProgress' ? 'In Progress' : 'Mastered'}`,
       icon: 'check'
     });
   } catch (error) {

@@ -1,23 +1,6 @@
 import { defineStore } from 'pinia';
 import { useArtistStore } from './artist-store';
-
-export interface Technique {
-  id: string;
-  name: string;
-  description: string;
-  difficulty: number;
-  tab_notation?: string;
-  instructions: string;
-  artist_id: string;
-  artist_name: string;
-  progress: {
-    status: string;
-    started_at?: string;
-    completed_at?: string;
-    notes?: string;
-    updated_at?: string;
-  };
-}
+import { Technique } from 'src/models';
 
 export const useTechniqueStore = defineStore('technique', {
   state: () => ({

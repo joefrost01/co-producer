@@ -1,29 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { Project, Briefing } from 'src/models';
 
 const API_URL = '/api';
-
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  collaborators: string[];
-  equipment: string[];
-  creative_directives: string[];
-  workflow_notes: string;
-  created_at: string;
-  updated_at: string;
-  has_briefing?: boolean;
-  tags?: string[];
-}
-
-export interface Briefing {
-  id: string;
-  project_id: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-}
 
 export const useProjectStore = defineStore('project', {
   state: () => ({

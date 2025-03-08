@@ -43,3 +43,7 @@ export interface Settings {
   autoBackup: boolean;
   backupFrequency: 'daily' | 'weekly' | 'monthly';
 }
+
+export interface SelectOption {
+
+}
