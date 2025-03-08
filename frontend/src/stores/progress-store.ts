@@ -75,12 +75,16 @@ export const useProgressStore = defineStore('progress', {
       }
     },
 
+    // Fix for technique-store.ts - Update progress handling
+
     async updateTechniqueProgress(techniqueId: string, progressUpdate: Partial<ProgressStatus>) {
       this.loading = true;
       try {
         // Update technique in the technique store first
         const techniqueStore = useTechniqueStore();
-        const updatedTechnique = await techniqueStore.updateTechniqueProgress(techniqueId, progressUpdate);
+        // Since updateTechniqueProgress is no longer async in the technique store,
+        // we don't need to await it
+        const updatedTechnique = techniqueStore.updateTechniqueProgress(techniqueId, progressUpdate);
 
         // Now update our local progress data
         this.progressData[techniqueId] = {
@@ -89,17 +93,16 @@ export const useProgressStore = defineStore('progress', {
           updated_at: new Date().toISOString()
         };
 
-        // Add activity record
+        // Add activity record - ensure all properties match ActivityItem interface
         this.addActivity({
           type: 'progress_update',
           timestamp: new Date().toISOString(),
           technique_id: techniqueId,
           technique_name: updatedTechnique.name,
           artist_id: updatedTechnique.artist_id,
-          // Fix: Provide default value for potentially undefined artist_name
           artist_name: updatedTechnique.artist_name || 'Unknown Artist',
-          status: progressUpdate.status,
-          notes: progressUpdate.notes
+          status: progressUpdate.status || '',  // Provide empty string instead of undefined
+          notes: progressUpdate.notes          // This is already optional in the interface
         });
 
         return this.progressData[techniqueId];
