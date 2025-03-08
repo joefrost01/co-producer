@@ -248,9 +248,14 @@ const filteredTags = computed(() => {
   );
 });
 
+// Define a type for tag counts
+interface TagCounts {
+  [key: string]: number;
+}
+
 // Calculate tag usage counts
 const tagUsageCounts = computed(() => {
-  const counts = {};
+  const counts: TagCounts = {};
 
   // Initialize all tags with count 0
   tags.value.forEach(tag => {
@@ -336,7 +341,7 @@ async function addTag() {
   }
 }
 
-function confirmDeleteTag(tag) {
+function confirmDeleteTag(tag: string) {
   tagToDelete.value = tag;
   deleteDialog.value = true;
 }
@@ -389,7 +394,7 @@ async function performMerge() {
   }
 }
 
-function getUsageColor(count) {
+function getUsageColor(count: number): string {
   if (count === 0) return 'grey';
   if (count < 3) return 'blue';
   if (count < 10) return 'teal';

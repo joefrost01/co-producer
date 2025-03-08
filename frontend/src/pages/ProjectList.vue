@@ -156,7 +156,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useProjectStore } from 'src/stores/project-store';
-import type { Project } from 'src/stores/project-store';
+import type { Project } from 'src/models/project';
 
 const $q = useQuasar();
 const projectStore = useProjectStore();

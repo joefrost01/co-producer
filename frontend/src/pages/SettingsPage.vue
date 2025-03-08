@@ -380,16 +380,17 @@
 import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { useSettingsStore } from 'src/stores/settings-store';
+import { Settings } from 'src/models/settings';
 
 const $q = useQuasar();
 const settingsStore = useSettingsStore();
 
 // Form state
-const settings = reactive({
+const settings = reactive<Settings>({
   username: '',
   email: '',
   theme: 'light',
-  defaultInstrument: 'guitar',
+  defaultInstrument: '',
   aiMode: 'offline',
   apiKey: '',
   detailedBriefings: true,
@@ -407,7 +408,7 @@ const restoring = ref(false);
 const showApiKey = ref(false);
 const restoreDialog = ref(false);
 const clearDataDialog = ref(false);
-const backupFile = ref(null);
+const backupFile = ref<File | null>(null);
 const clearDataConfirmation = ref('');
 
 // Options
@@ -437,8 +438,15 @@ const backupFrequencyOptions = [
   { label: 'Monthly', value: 'monthly' }
 ];
 
+interface BackupHistoryItem {
+  id: number;
+  date: string;
+  size: string;
+  items: number;
+}
+
 // Mock backup history (replace with real data from API)
-const backupHistory = ref([
+const backupHistory = ref<BackupHistoryItem[]>([
   {
     id: 1,
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
@@ -474,7 +482,7 @@ async function saveGeneralSettings() {
     saving.value = true;
 
     // Update only general settings
-    const generalSettings = {
+    const generalSettings: Partial<Settings> = {
       username: settings.username,
       email: settings.email,
       theme: settings.theme,
@@ -506,7 +514,7 @@ async function saveAISettings() {
     savingAI.value = true;
 
     // Update only AI settings
-    const aiSettings = {
+    const aiSettings: Partial<Settings> = {
       aiMode: settings.aiMode,
       apiKey: settings.apiKey,
       detailedBriefings: settings.detailedBriefings,
@@ -594,23 +602,26 @@ async function restoreFromFile() {
 
     reader.onload = async (e) => {
       try {
-        const backupData = JSON.parse(e.target.result);
-        await settingsStore.restoreBackup(backupData);
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          const backupData = JSON.parse(result);
+          await settingsStore.restoreBackup(backupData);
 
-        $q.notify({
-          color: 'positive',
-          position: 'top',
-          message: 'Data restored successfully',
-          icon: 'check'
-        });
+          $q.notify({
+            color: 'positive',
+            position: 'top',
+            message: 'Data restored successfully',
+            icon: 'check'
+          });
 
-        // Close dialog
-        restoreDialog.value = false;
+          // Close dialog
+          restoreDialog.value = false;
 
-        // Reload page to reflect changes
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+          // Reload page to reflect changes
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
       } catch (parseError) {
         $q.notify({
           color: 'negative',
@@ -645,7 +656,7 @@ async function restoreFromFile() {
   }
 }
 
-function downloadBackup(backup) {
+function downloadBackup(backup: BackupHistoryItem) {
   // In a real app, this would fetch the backup file from the server
   // For this example, we'll create a mock backup file
 
@@ -676,7 +687,7 @@ function downloadBackup(backup) {
   });
 }
 
-async function restoreBackup(backup) {
+async function restoreBackup(backup: BackupHistoryItem) {
   // In a real app, this would fetch the backup file from the server and restore it
   // For this example, we'll just show a notification
 
@@ -767,7 +778,7 @@ async function clearAllData() {
   }
 }
 
-function formatDate(dateString) {
+function formatDate(dateString: string): string {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -778,17 +789,3 @@ function formatDate(dateString) {
   });
 }
 </script>
-
-<style lang="scss">
-.backup-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-}
-</style>
