@@ -180,8 +180,15 @@
 
               <template v-slot:body-cell-progress="props">
                 <q-td :props="props">
-                  <q-badge :color="getProgressColor(props.row.progress.status)" text-color="white">
+                  <q-badge
+                    v-if="props.row.progress"
+                    :color="getProgressColor(props.row.progress.status)"
+                    text-color="white"
+                  >
                     {{ formatProgressStatus(props.row.progress.status) }}
+                  </q-badge>
+                  <q-badge v-else color="grey" text-color="white">
+                    Not Set
                   </q-badge>
                 </q-td>
               </template>
@@ -284,7 +291,7 @@
     <q-dialog v-model="detailDialog">
       <q-card style="min-width: 500px">
         <q-card-section class="row items-center">
-          <div class="text-h6">{{ selectedTechnique?.name }}</div>
+          <div class="text-h6">{{ selectedTechnique?.name || '' }}</div>
           <q-space />
           <q-btn flat round icon="close" v-close-popup />
         </q-card-section>
@@ -294,43 +301,64 @@
         <q-card-section>
           <div class="row items-center q-mb-md">
             <div class="text-subtitle2 q-mr-md">Artist:</div>
-            <div>{{ selectedTechnique?.artist_name }}</div>
+            <div>{{ selectedTechnique?.artist_name || '' }}</div>
           </div>
 
           <div class="row items-center q-mb-md">
             <div class="text-subtitle2 q-mr-md">Difficulty:</div>
-            <q-rating
-              v-model="selectedTechnique?.difficulty"
-              max="5"
-              size="xs"
-              readonly
-              :color="getDifficultyColor(selectedTechnique?.difficulty)"
-            />
-            <span class="text-caption q-ml-sm">
-              {{ selectedTechnique?.difficulty }}/5
-            </span>
+            <template v-if="selectedTechnique">
+              <q-rating
+                :model-value="selectedTechnique.difficulty"
+                max="5"
+                size="xs"
+                readonly
+                :color="getDifficultyColor(selectedTechnique.difficulty || 0)"
+              />
+              <span class="text-caption q-ml-sm">
+                {{ selectedTechnique.difficulty || 0 }}/5
+              </span>
+            </template>
+            <template v-else>
+              <q-rating
+                :model-value="0"
+                max="5"
+                size="xs"
+                readonly
+                color="grey"
+              />
+              <span class="text-caption q-ml-sm">
+                0/5
+              </span>
+            </template>
           </div>
 
           <div class="row items-center q-mb-md">
             <div class="text-subtitle2 q-mr-md">Status:</div>
-            <q-badge :color="getProgressColor(selectedTechnique?.progress.status)" text-color="white">
-              {{ formatProgressStatus(selectedTechnique?.progress.status) }}
+            <q-badge
+              v-if="selectedTechnique?.progress"
+              :color="getProgressColor(selectedTechnique.progress.status)"
+              text-color="white"
+            >
+              {{ formatProgressStatus(selectedTechnique.progress.status) }}
+            </q-badge>
+            <q-badge v-else color="grey" text-color="white">
+              Not Set
             </q-badge>
           </div>
 
           <div class="q-mb-md">
             <div class="text-subtitle2 q-mb-sm">Description:</div>
-            <p>{{ selectedTechnique?.description }}</p>
+            <p>{{ selectedTechnique?.description || '' }}</p>
           </div>
 
           <div v-if="selectedTechnique?.tab_notation" class="q-mb-md">
             <div class="text-subtitle2 q-mb-sm">Tab Notation:</div>
-            <pre class="tab-notation">{{ selectedTechnique?.tab_notation }}</pre>
+            <pre class="tab-notation">{{ selectedTechnique.tab_notation }}</pre>
           </div>
 
           <div class="q-mb-md">
             <div class="text-subtitle2 q-mb-sm">Instructions:</div>
-            <p>{{ selectedTechnique?.instructions }}</p>
+            <p>{{ selectedTechnique?.instructions || '' }}</p>
           </div>
         </q-card-section>
 
@@ -342,7 +370,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="updateProgress(selectedTechnique?.id, 'NotStarted')"
+                @click="selectedTechnique?.id && updateProgress(selectedTechnique.id, 'NotStarted')"
               >
                 <q-item-section avatar>
                   <q-icon name="schedule" color="grey" />
@@ -353,7 +381,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="updateProgress(selectedTechnique?.id, 'InProgress')"
+                @click="selectedTechnique?.id && updateProgress(selectedTechnique.id, 'InProgress')"
               >
                 <q-item-section avatar>
                   <q-icon name="trending_up" color="blue" />
@@ -364,7 +392,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="updateProgress(selectedTechnique?.id, 'Mastered')"
+                @click="selectedTechnique?.id && updateProgress(selectedTechnique.id, 'Mastered')"
               >
                 <q-item-section avatar>
                   <q-icon name="check_circle" color="positive" />
@@ -391,7 +419,7 @@
         <q-separator />
 
         <q-card-section>
-          <p class="q-mb-md">Add "<strong>{{ selectedTechnique?.name }}</strong>" to your learning plan.</p>
+          <p class="q-mb-md">Add "<strong>{{ selectedTechnique?.name || '' }}</strong>" to your learning plan.</p>
 
           <q-form @submit="saveLearningPlan" class="q-gutter-md">
             <q-input
@@ -452,6 +480,9 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useProgressStore } from 'src/stores/progress-store';
+import { Technique } from 'src/models/technique';
+import { ProgressStatus } from 'src/models/progress';
+import { ColumnDefinition } from 'src/models/common';
 
 const $q = useQuasar();
 const techniqueStore = useTechniqueStore();
@@ -462,7 +493,8 @@ const search = ref('');
 const statusFilter = ref('all');
 const detailDialog = ref(false);
 const planDialog = ref(false);
-const selectedTechnique = ref(null);
+// Add proper typing to selectedTechnique
+const selectedTechnique = ref<Technique | null>(null);
 
 const statusOptions = [
   { label: 'All Statuses', value: 'all' },
@@ -471,13 +503,17 @@ const statusOptions = [
   { label: 'Not Started', value: 'NotStarted' }
 ];
 
-const columns = [
+// Add proper typing to the columns array
+const columns: ColumnDefinition[] = [
   {
     name: 'name',
     required: true,
     label: 'Technique',
     align: 'left',
-    field: row => row.name,
+    field: (row: Record<string, unknown>) => {
+      // Use the index signature to access properties safely
+      return row.name as string;
+    },
     sortable: true
   },
   {
@@ -489,7 +525,10 @@ const columns = [
   {
     name: 'progress',
     label: 'Status',
-    field: row => row.progress.status,
+    field: (row: Record<string, unknown>) => {
+      const progress = row.progress as Record<string, unknown> | undefined;
+      return (progress?.status as string) || 'NotStarted';
+    },
     sortable: true
   },
   {
@@ -500,30 +539,39 @@ const columns = [
   }
 ];
 
-const learningPlan = reactive({
+// Define a proper interface for the learning plan
+interface LearningPlanForm {
+  technique_id: string;
+  target_date: string;
+  notes: string;
+  priority: 'low' | 'medium' | 'high';
+}
+
+const learningPlan = reactive<LearningPlanForm>({
   technique_id: '',
   target_date: '',
   notes: '',
   priority: 'medium'
 });
 
-// Computed properties
+// Fix the filteredTechniques computed property to handle optional progress property
 const filteredTechniques = computed(() => {
   return techniqueStore.techniques.filter(technique => {
-    if (statusFilter.value !== 'all' && technique.progress.status !== statusFilter.value) {
+    if (statusFilter.value !== 'all' && technique.progress?.status !== statusFilter.value) {
       return false;
     }
     return true;
   });
 });
 
+// Fix the stats computed property to handle optional progress property
 const stats = computed(() => {
   const techniques = techniqueStore.techniques;
   return {
     total: techniques.length,
-    mastered: techniques.filter(t => t.progress.status === 'Mastered').length,
-    inProgress: techniques.filter(t => t.progress.status === 'InProgress').length,
-    notStarted: techniques.filter(t => t.progress.status === 'NotStarted').length
+    mastered: techniques.filter(t => t.progress?.status === 'Mastered').length,
+    inProgress: techniques.filter(t => t.progress?.status === 'InProgress').length,
+    notStarted: techniques.filter(t => t.progress?.status === 'NotStarted').length
   };
 });
 
@@ -532,16 +580,31 @@ const overallProgress = computed(() => {
   return (stats.value.mastered / stats.value.total) * 100;
 });
 
+// Fix the difficultyStats computed property
 const difficultyStats = computed(() => {
-  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  // Create an indexed type to fix the indexing issues
+  const result: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   techniqueStore.techniques.forEach(technique => {
-    result[technique.difficulty] = (result[technique.difficulty] || 0) + 1;
+    // Make sure difficulty is a number and is a valid index
+    const difficulty = Number(technique.difficulty);
+    if (difficulty >= 1 && difficulty <= 5) {
+      result[difficulty] = (result[difficulty] || 0) + 1;
+    }
   });
   return result;
 });
 
-// Mock data for recent updates (replace with real API data when available)
-const recentUpdates = ref([
+// Add proper typing to recentUpdates
+interface UpdateItem {
+  id: number;
+  title: string;
+  description: string;
+  timestamp: string;
+  icon: string;
+  color: string;
+}
+
+const recentUpdates = ref<UpdateItem[]>([
   {
     id: 1,
     title: 'Status Updated',
@@ -576,8 +639,8 @@ onMounted(async () => {
   }
 });
 
-// Methods
-function formatProgressStatus(status) {
+// Fix the methods by adding proper type annotations
+function formatProgressStatus(status: string): string {
   switch (status) {
     case 'NotStarted': return 'Not Started';
     case 'InProgress': return 'In Progress';
@@ -586,7 +649,7 @@ function formatProgressStatus(status) {
   }
 }
 
-function getProgressColor(status) {
+function getProgressColor(status: string): string {
   switch (status) {
     case 'NotStarted': return 'grey';
     case 'InProgress': return 'blue';
@@ -595,8 +658,8 @@ function getProgressColor(status) {
   }
 }
 
-function getDifficultyColor(level) {
-  switch (parseInt(level)) {
+function getDifficultyColor(level: string | number): string {
+  switch (parseInt(level as string)) {
     case 1: return 'green';
     case 2: return 'light-green';
     case 3: return 'amber';
@@ -606,7 +669,7 @@ function getDifficultyColor(level) {
   }
 }
 
-function formatDate(dateString) {
+function formatDate(dateString: string): string {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -615,7 +678,7 @@ function formatDate(dateString) {
   });
 }
 
-async function updateProgress(id, status) {
+async function updateProgress(id: string, status: string): Promise<void> {
   try {
     await progressStore.updateTechniqueProgress(id, { status });
 
@@ -628,7 +691,11 @@ async function updateProgress(id, status) {
 
     // Update the selected technique if it's the one being viewed
     if (selectedTechnique.value && selectedTechnique.value.id === id) {
-      selectedTechnique.value.progress.status = status;
+      if (!selectedTechnique.value.progress) {
+        selectedTechnique.value.progress = { status };
+      } else {
+        selectedTechnique.value.progress.status = status;
+      }
     }
   } catch (error) {
     $q.notify({
@@ -640,21 +707,23 @@ async function updateProgress(id, status) {
   }
 }
 
-function viewTechniqueDetails(technique) {
+function viewTechniqueDetails(technique: Technique): void {
   selectedTechnique.value = { ...technique };
   detailDialog.value = true;
 }
 
-function addToLearningPlan(technique) {
+function addToLearningPlan(technique: Technique): void {
   selectedTechnique.value = { ...technique };
   learningPlan.technique_id = technique.id;
-  learningPlan.target_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)
-    .toISOString()
-    .split('T')[0]; // Set default date to 2 weeks from now
+  const targetDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14);
+  const dateStr = targetDate.toISOString().split('T')[0];
+  if (dateStr) {
+    learningPlan.target_date = dateStr; // Set default date to 2 weeks from now
+  }
   planDialog.value = true;
 }
 
-async function saveLearningPlan() {
+async function saveLearningPlan(): Promise<void> {
   try {
     // This would be implemented with a real API call
     // await learningPlanStore.addTechniqueToLearningPlan(learningPlan);
