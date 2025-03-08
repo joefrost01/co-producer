@@ -2,11 +2,17 @@
 import axios from 'axios';
 import type { App } from 'vue';
 import { Notify } from 'quasar';
+import { setupMockAPI } from '../services/api-mock';
 
 // Create a base instance with default settings
 const api = axios.create({
   baseURL: '/api'
 });
+
+// Set up mock API in development environment
+if (process.env.NODE_ENV !== 'production') {
+  setupMockAPI();
+}
 
 // Request interceptor for API calls
 api.interceptors.request.use(

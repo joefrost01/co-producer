@@ -11,12 +11,17 @@ import '@quasar/extras/material-icons/material-icons.css';
 // Import Quasar css
 import 'quasar/dist/quasar.css';
 
+// Create the app instance
 const app = createApp(App);
 
-// Initialize Pinia and use it before mounting the app
+// Initialize Pinia
 const pinia = createPinia();
 app.use(pinia);
+
+// Set up router
 app.use(router);
+
+// Set up Quasar
 app.use(Quasar, {
   plugins: {}, // import Quasar plugins and add here
   config: {
@@ -24,4 +29,5 @@ app.use(Quasar, {
   }
 });
 
+// Mount the app
 app.mount('#app');
