@@ -158,7 +158,7 @@
                 <q-card flat bordered>
                   <q-card-section>
                     <div class="text-h5">{{ project.title }} - AI Briefing</div>
-                    <div class="text-subtitle2 text-grey-7">Created: {{ formatDate(briefing.created_at) }}</div>
+                    <div class="text-subtitle2 text-grey-7">Created: {{ briefing && formatDate(briefing.created_at) }}</div>
 
                     <q-separator class="q-my-md" />
 
@@ -271,7 +271,9 @@ import { useQuasar } from 'quasar';
 import { useProjectStore } from 'src/stores/project-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useGearStore } from 'src/stores/gear-store';
-import { marked } from 'marked';
+// Fix for marked import error - install via npm if not already installed
+import * as marked from 'marked';
+import { Project, Briefing } from 'src/models/project';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -281,7 +283,8 @@ const artistStore = useArtistStore();
 const gearStore = useGearStore();
 
 const loading = ref(true);
-const project = ref({
+// Fix type to match Project interface from models
+const project = ref<Project>({
   id: '',
   title: '',
   description: '',
@@ -292,7 +295,8 @@ const project = ref({
   created_at: '',
   updated_at: ''
 });
-const briefing = ref(null);
+// Initialize as null but with correct type
+const briefing = ref<Briefing | null>(null);
 const markdownSource = ref('');
 const jsonSource = ref('');
 const activeTab = ref('view');
@@ -301,7 +305,7 @@ const hasBriefing = computed(() => !!briefing.value);
 
 const renderedBriefing = computed(() => {
   if (!markdownSource.value) return '';
-  return marked(markdownSource.value);
+  return marked.parse(markdownSource.value);
 });
 
 const collaborators = computed(() => {
@@ -351,7 +355,8 @@ onMounted(async () => {
   }
 });
 
-function formatDate(dateString) {
+// Add type to function parameter
+function formatDate(dateString: string): string {
   if (!dateString) return 'Unknown';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -361,7 +366,7 @@ function formatDate(dateString) {
   });
 }
 
-async function generateBriefing() {
+async function generateBriefing(): Promise<void> {
   try {
     $q.loading.show({
       message: 'Generating project briefing...'
@@ -395,7 +400,8 @@ async function generateBriefing() {
   }
 }
 
-function copyToClipboard(text) {
+// Add type to function parameter
+function copyToClipboard(text: string): void {
   navigator.clipboard.writeText(text).then(() => {
     $q.notify({
       color: 'positive',
@@ -407,7 +413,8 @@ function copyToClipboard(text) {
   });
 }
 
-function downloadBriefing(type) {
+// Add type to function parameter
+function downloadBriefing(type: string): void {
   const fileName = `${project.value.title.replace(/\s+/g, '_')}_briefing`;
   let content = '';
   let fileType = '';
