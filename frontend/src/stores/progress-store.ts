@@ -96,7 +96,8 @@ export const useProgressStore = defineStore('progress', {
           technique_id: techniqueId,
           technique_name: updatedTechnique.name,
           artist_id: updatedTechnique.artist_id,
-          artist_name: updatedTechnique.artist_name,
+          // Fix: Provide default value for potentially undefined artist_name
+          artist_name: updatedTechnique.artist_name || 'Unknown Artist',
           status: progressUpdate.status,
           notes: progressUpdate.notes
         });
@@ -136,8 +137,9 @@ export const useProgressStore = defineStore('progress', {
               plan_id: newPlan.id,
               technique_id: technique.id,
               technique_name: technique.name,
-              target_date: plan.target_date,
-              priority: plan.priority
+              // Fix: Provide default values for potentially undefined properties
+              target_date: plan.target_date || new Date().toISOString(),
+              priority: plan.priority || 'Normal'
             });
           }
         }

@@ -1,53 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { Artist, Technique } from 'src/models'
 
 const API_URL = '/api';
-
-export interface Technique {
-  id: string;
-  name: string;
-  description: string;
-  difficulty: number;
-  tab_notation?: string;
-  instructions: string;
-  progress: {
-    status: string;
-    started_at?: string;
-    completed_at?: string;
-    notes?: string;
-    updated_at?: string;
-  };
-}
-
-export interface GearSetting {
-  gear_type: string;
-  gear_name: string;
-  settings: Record<string, string>;
-  description: string;
-}
-
-export interface Media {
-  media_type: string;
-  title: string;
-  url: string;
-  description?: string;
-}
-
-export interface Artist {
-  id: string;
-  name: string;
-  band?: string;
-  era?: string;
-  description: string;
-  instrument: string;
-  difficulty: string;
-  tags: string[];
-  techniques: Technique[];
-  gear_settings: GearSetting[];
-  media: Media[];
-  created_at: string;
-  updated_at: string;
-}
 
 export const useArtistStore = defineStore('artist', {
   state: () => ({

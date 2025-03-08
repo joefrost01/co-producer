@@ -130,13 +130,13 @@ export const useProjectStore = defineStore('project', {
           throw new Error('Project not found');
         }
 
-        // Create a new project based on the existing one
-        const newProject = {
-          ...projectToDuplicate,
-          id: undefined, // Remove ID so the API will generate a new one
-          title: `${projectToDuplicate.title} (Copy)`,
-          created_at: undefined,
-          updated_at: undefined
+        // Create a new project based on the existing one, but omit specific fields
+        // to avoid TypeScript errors with undefined values
+        const { id: _, created_at, updated_at, ...restOfProject } = projectToDuplicate;
+
+        const newProject: Partial<Project> = {
+          ...restOfProject,
+          title: `${projectToDuplicate.title} (Copy)`
         };
 
         return await this.createProject(newProject);

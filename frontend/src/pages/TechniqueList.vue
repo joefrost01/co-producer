@@ -111,8 +111,8 @@
 
                 <q-card-section>
                   <div class="q-mb-sm">
-                    <q-badge :color="getProgressColor(technique.progress.status)" class="q-mb-sm">
-                      {{ formatProgressStatus(technique.progress.status) }}
+                    <q-badge :color="getProgressColor(technique.progress?.status)" class="q-mb-sm">
+                      {{ formatProgressStatus(technique.progress?.status) }}
                     </q-badge>
                   </div>
 
@@ -320,7 +320,7 @@
           <div class="row items-center q-mb-md">
             <div class="text-subtitle2 q-mr-md">Difficulty:</div>
             <q-rating
-              v-model="selectedTechnique?.difficulty"
+              :model-value="selectedTechnique?.difficulty"
               max="5"
               size="xs"
               readonly
@@ -333,8 +333,8 @@
 
           <div class="row items-center q-mb-md">
             <div class="text-subtitle2 q-mr-md">Status:</div>
-            <q-badge :color="getProgressColor(selectedTechnique?.progress.status)" text-color="white">
-              {{ formatProgressStatus(selectedTechnique?.progress.status) }}
+            <q-badge :color="getProgressColor(selectedTechnique?.progress?.status)" text-color="white">
+              {{ formatProgressStatus(selectedTechnique?.progress?.status) }}
             </q-badge>
           </div>
 
@@ -362,7 +362,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="updateProgress(selectedTechnique?.id, 'NotStarted')"
+                @click="selectedTechnique?.id && updateProgress(selectedTechnique.id, 'NotStarted')"
               >
                 <q-item-section avatar>
                   <q-icon name="schedule" color="grey" />
@@ -373,7 +373,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="updateProgress(selectedTechnique?.id, 'InProgress')"
+                @click="selectedTechnique?.id && updateProgress(selectedTechnique.id, 'InProgress')"
               >
                 <q-item-section avatar>
                   <q-icon name="trending_up" color="blue" />
@@ -384,7 +384,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="updateProgress(selectedTechnique?.id, 'Mastered')"
+                @click="selectedTechnique?.id && updateProgress(selectedTechnique.id, 'Mastered')"
               >
                 <q-item-section avatar>
                   <q-icon name="check_circle" color="positive" />
@@ -394,8 +394,8 @@
             </q-list>
           </q-btn-dropdown>
 
-          <q-btn flat color="secondary" icon="playlist_add" label="Add to Learning Plan" @click="addToLearningPlan(selectedTechnique)" />
-          <q-btn flat color="primary" icon="edit" label="Edit" @click="editTechnique(selectedTechnique)" v-close-popup />
+          <q-btn flat color="secondary" icon="playlist_add" label="Add to Learning Plan" @click="selectedTechnique && addToLearningPlan(selectedTechnique)" />
+          <q-btn flat color="primary" icon="edit" label="Edit" @click="selectedTechnique && editTechnique(selectedTechnique)" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -495,6 +495,29 @@ import { useTechniqueStore } from 'src/stores/technique-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
 
+// Define interfaces for our data types
+interface Technique {
+  id: string;
+  artist_id: string;
+  name: string;
+  description: string;
+  difficulty: number;
+  tab_notation?: string;
+  instructions: string;
+  artist_name?: string;
+  progress?: {
+    status: string;
+  };
+  tags?: string[];
+}
+
+interface LearningPlanData {
+  technique_id: string;
+  target_date: string;
+  notes: string;
+  priority: string;
+}
+
 const $q = useQuasar();
 const router = useRouter();
 const techniqueStore = useTechniqueStore();
@@ -507,19 +530,19 @@ const detailDialog = ref(false);
 const planDialog = ref(false);
 const deleteDialog = ref(false);
 const isEditing = ref(false);
-const techniqueToDelete = ref(null);
-const selectedTechnique = ref(null);
+const techniqueToDelete = ref<Technique | null>(null);
+const selectedTechnique = ref<Technique | null>(null);
 
 // Filters
 const filters = reactive({
   search: '',
-  artist: null,
-  difficulty: null,
-  status: null
+  artist: null as string | null,
+  difficulty: null as string | null,
+  status: null as string | null
 });
 
 // Form state
-const editedTechnique = ref({
+const editedTechnique = ref<Technique>({
   id: '',
   artist_id: '',
   name: '',
@@ -530,7 +553,7 @@ const editedTechnique = ref({
   progress: { status: 'NotStarted' }
 });
 
-const learningPlan = reactive({
+const learningPlan = reactive<LearningPlanData>({
   technique_id: '',
   target_date: '',
   notes: '',
@@ -566,12 +589,12 @@ const priorityOptions = [
 // Marker labels for difficulty slider
 const markerLabelsClass = computed(() => {
   return {
-    1: 'text-green',
-    2: 'text-light-green',
-    3: 'text-amber',
-    4: 'text-orange',
-    5: 'text-red'
-  };
+    '1': 'text-green',
+    '2': 'text-light-green',
+    '3': 'text-amber',
+    '4': 'text-orange',
+    '5': 'text-red'
+  } as Record<string, string>;
 });
 
 // Filtered techniques based on selected filters
@@ -590,7 +613,7 @@ const filteredTechniques = computed(() => {
 
     // Difficulty filter
     if (filters.difficulty) {
-      const diff = parseInt(technique.difficulty);
+      const diff = parseInt(String(technique.difficulty));
       if (filters.difficulty === 'beginner' && (diff > 2)) return false;
       if (filters.difficulty === 'intermediate' && diff !== 3) return false;
       if (filters.difficulty === 'advanced' && (diff < 4)) return false;
@@ -646,18 +669,18 @@ function openAddDialog() {
   techniqueDialog.value = true;
 }
 
-function editTechnique(technique) {
+function editTechnique(technique: Technique) {
   isEditing.value = true;
   editedTechnique.value = JSON.parse(JSON.stringify(technique)); // Deep copy
   techniqueDialog.value = true;
 }
 
-function viewTechniqueDetails(technique) {
+function viewTechniqueDetails(technique: Technique) {
   selectedTechnique.value = { ...technique };
   detailDialog.value = true;
 }
 
-function confirmDeleteTechnique(technique) {
+function confirmDeleteTechnique(technique: Technique) {
   techniqueToDelete.value = technique;
   deleteDialog.value = true;
 }
@@ -666,13 +689,15 @@ async function deleteTechnique() {
   if (!techniqueToDelete.value) return;
 
   try {
-    await artistStore.deleteTechnique(techniqueToDelete.value.artist_id, techniqueToDelete.value.id);
-    $q.notify({
-      color: 'positive',
-      position: 'top',
-      message: 'Technique deleted successfully',
-      icon: 'check'
-    });
+    if (techniqueToDelete.value.artist_id && techniqueToDelete.value.id) {
+      await artistStore.deleteTechnique(techniqueToDelete.value.artist_id, techniqueToDelete.value.id);
+      $q.notify({
+        color: 'positive',
+        position: 'top',
+        message: 'Technique deleted successfully',
+        icon: 'check'
+      });
+    }
   } catch (error) {
     $q.notify({
       color: 'negative',
@@ -713,7 +738,7 @@ async function saveTechnique() {
   }
 }
 
-function addToLearningPlan(technique) {
+function addToLearningPlan(technique: Technique) {
   selectedTechnique.value = technique;
   learningPlan.technique_id = technique.id;
   learningPlan.target_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)
@@ -746,7 +771,7 @@ async function saveLearningPlan() {
   }
 }
 
-async function updateProgress(techniqueId, status) {
+async function updateProgress(techniqueId: string, status: string) {
   try {
     await progressStore.updateTechniqueProgress(techniqueId, { status });
 
@@ -759,6 +784,9 @@ async function updateProgress(techniqueId, status) {
 
     // Update the selected technique if it's the one being viewed
     if (selectedTechnique.value && selectedTechnique.value.id === techniqueId) {
+      if (!selectedTechnique.value.progress) {
+        selectedTechnique.value.progress = { status: 'NotStarted' };
+      }
       selectedTechnique.value.progress.status = status;
     }
   } catch (error) {
@@ -771,7 +799,9 @@ async function updateProgress(techniqueId, status) {
   }
 }
 
-function formatProgressStatus(status) {
+function formatProgressStatus(status: string | undefined) {
+  if (!status) return 'Unknown';
+
   switch (status) {
     case 'NotStarted': return 'Not Started';
     case 'InProgress': return 'In Progress';
@@ -780,7 +810,9 @@ function formatProgressStatus(status) {
   }
 }
 
-function getProgressColor(status) {
+function getProgressColor(status: string | undefined) {
+  if (!status) return 'grey';
+
   switch (status) {
     case 'NotStarted': return 'grey';
     case 'InProgress': return 'blue';
@@ -789,8 +821,12 @@ function getProgressColor(status) {
   }
 }
 
-function getDifficultyColor(level) {
-  switch (parseInt(level)) {
+function getDifficultyColor(level: number | undefined) {
+  if (!level) return 'grey';
+
+  const levelNum = typeof level === 'string' ? parseInt(level) : level;
+
+  switch (levelNum) {
     case 1: return 'green';
     case 2: return 'light-green';
     case 3: return 'amber';

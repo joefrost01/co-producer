@@ -30,7 +30,7 @@ export const useTagStore = defineStore('tag', {
       artistStore.artists.forEach(artist => {
         artist.tags?.forEach(tag => {
           if (tag in counts) {
-            counts[tag]++;
+            counts[tag] = (counts[tag] || 0) + 1;
           }
         });
       });
@@ -41,7 +41,7 @@ export const useTagStore = defineStore('tag', {
         if (project.tags) {
           project.tags.forEach(tag => {
             if (tag in counts) {
-              counts[tag]++;
+              counts[tag] = (counts[tag] || 0) + 1;
             }
           });
         }
@@ -52,14 +52,14 @@ export const useTagStore = defineStore('tag', {
 
     // Tags sorted by usage (most used first)
     tagsByUsage: (state) => {
-      const counts = state.tagUsageCount;
-      return [...state.tags].sort((a, b) => counts[b] - counts[a]);
+      const counts = useTagStore().tagUsageCount;
+      return [...state.tags].sort((a, b) => (counts[b] || 0) - (counts[a] || 0));
     },
 
     // Tags that are not being used
     unusedTags: (state) => {
-      const counts = state.tagUsageCount;
-      return state.tags.filter(tag => counts[tag] === 0);
+      const counts = useTagStore().tagUsageCount;
+      return state.tags.filter(tag => (counts[tag] || 0) === 0);
     }
   },
 
