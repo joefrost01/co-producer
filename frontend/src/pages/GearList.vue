@@ -319,7 +319,7 @@ const filteredGear = computed(() => {
 onMounted(async () => {
   try {
     await gearStore.fetchGear();
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -387,7 +387,7 @@ async function deleteGear() {
       message: 'Gear deleted successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -411,12 +411,15 @@ function removeSetting(key: string) {
   delete editedGear.value.settings[key];
 }
 
-function updateSettingKey(index: number, oldKey: string): void {
-  const newKey = settingKeys.value[index];
-  if (newKey && newKey !== oldKey && oldKey) {
+function updateSettingKey(index: number, oldKey: string, newValue: string): void {
+  // Make sure newValue is stored in the current settingKey position
+  settingKeys.value[index] = newValue;
+
+  // Only proceed if we have a valid key
+  if (newValue && newValue !== oldKey && oldKey) {
     const value = editedGear.value.settings[oldKey];
     if (value !== undefined) {
-      editedGear.value.settings[newKey] = value;
+      editedGear.value.settings[newValue] = value;
       delete editedGear.value.settings[oldKey];
     }
   }
@@ -442,7 +445,7 @@ async function saveGear() {
       });
     }
     gearDialog.value = false;
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',

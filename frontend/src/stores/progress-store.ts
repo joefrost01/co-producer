@@ -123,7 +123,7 @@ export const useProgressStore = defineStore('progress', {
     },
 
     // Remove async since there's no await operation
-    addToLearningPlan(plan: Partial<LearningPlanItem>) {
+    addToLearningPlan(plan: Partial<LearningPlanItem>): Promise<LearningPlanItem> {
       this.loading = true;
       try {
         // In a real application, this would call an API

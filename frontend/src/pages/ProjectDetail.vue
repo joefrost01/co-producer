@@ -266,18 +266,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useProjectStore } from 'src/stores/project-store';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useGearStore } from 'src/stores/gear-store';
 // Fix for marked import error - install via npm if not already installed
 import * as marked from 'marked';
-import { Project, Briefing } from 'src/models/project';
+import type { Project, Briefing } from 'src/models/project';
 
 const $q = useQuasar();
 const route = useRoute();
-const router = useRouter();
+//const router = useRouter();
 const projectStore = useProjectStore();
 const artistStore = useArtistStore();
 const gearStore = useGearStore();
@@ -339,11 +339,11 @@ onMounted(async () => {
       briefing.value = await projectStore.fetchBriefing(id);
       markdownSource.value = await projectStore.fetchBriefingMarkdown(id);
       jsonSource.value = JSON.stringify(await projectStore.fetchBriefingJson(id), null, 2);
-    } catch (err) {
+    } catch {
       // Briefing not available yet
       briefing.value = null;
     }
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -389,7 +389,7 @@ async function generateBriefing(): Promise<void> {
 
     // Switch to view tab
     activeTab.value = 'view';
-  } catch (error) {
+  } catch {
     $q.loading.hide();
     $q.notify({
       color: 'negative',
@@ -411,7 +411,7 @@ async function copyToClipboard(text: string): Promise<void> {
       icon: 'check',
       timeout: 1000
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',

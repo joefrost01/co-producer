@@ -481,7 +481,6 @@ import { useQuasar } from 'quasar';
 import { useTechniqueStore } from 'src/stores/technique-store';
 import { useProgressStore } from 'src/stores/progress-store';
 import type { Technique } from 'src/models/technique';
-import type { ProgressStatus } from 'src/models/progress';
 import type { ColumnDefinition } from 'src/models/common';
 
 const $q = useQuasar();
@@ -627,7 +626,7 @@ onMounted(async () => {
   try {
     await techniqueStore.fetchTechniques();
     await progressStore.fetchProgress();
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -698,7 +697,7 @@ async function updateProgress(id: string, status: string): Promise<void> {
         selectedTechnique.value.progress.status = status;
       }
     }
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -734,7 +733,7 @@ function saveLearningPlan(): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
       // Since progressStore.addToLearningPlan doesn't return a promise, we don't need to await it
-      progressStore.addToLearningPlan(learningPlan);
+      void progressStore.addToLearningPlan(learningPlan)
 
       $q.notify({
         color: 'positive',
@@ -745,14 +744,14 @@ function saveLearningPlan(): Promise<void> {
 
       planDialog.value = false;
       resolve();
-    } catch (error) {
+    } catch {
       $q.notify({
         color: 'negative',
         position: 'top',
         message: 'Failed to add technique to learning plan',
         icon: 'report_problem'
       });
-      reject(error);
+      reject(new Error('Failed to add technique to learning plan'));
     }
   });
 }

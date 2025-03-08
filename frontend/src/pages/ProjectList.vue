@@ -78,7 +78,7 @@
                 </div>
               </template>
 
-              <template v-slot:body-cell-actions="props">
+              <template v-slot:body-cell-actions="props: any">
                 <q-td :props="props" class="q-gutter-sm">
                   <q-btn
                     flat
@@ -175,6 +175,8 @@ const sortOptions = [
 ];
 
 interface ColumnDefinition {
+  name: string,
+  required?: boolean;
   label: string;
   align?: 'left' | 'right' | 'center';
   field: string | ((row: Record<string, unknown>) => unknown);
@@ -184,30 +186,38 @@ interface ColumnDefinition {
 
 const columns: ColumnDefinition[] = [
   {
-    name: 'title',
+    name: 'title', // Add name property to match interface
     required: true,
     label: 'Project',
     align: 'left',
-    field: (row: Project) => row.title,
-    format: (val: string) => `${val}`,
+    field: (row: Record<string, unknown>) => row.title as string,
+    format: (val: unknown) => String(val),
     sortable: true
   },
   {
-    name: 'description',
+    name: 'description', // Add name property
     align: 'left',
     label: 'Description',
     field: 'description',
     sortable: false
   },
   {
-    name: 'updated_at',
+    name: 'updated_at', // Add name property
     label: 'Last Updated',
     field: 'updated_at',
     sortable: true,
-    format: (val: string) => new Date(val).toLocaleDateString()
+    format: (val: unknown) => {
+      if (!val) return '';
+      try {
+        return new Date(val as string).toLocaleDateString();
+      } catch (e) {
+        console.error(e);
+        return String(val as string);
+      }
+    }
   },
   {
-    name: 'actions',
+    name: 'actions', // Add name property
     label: 'Actions',
     field: 'actions',
     align: 'right'
@@ -239,7 +249,7 @@ const filteredProjects = computed(() => {
 onMounted(async () => {
   try {
     await projectStore.fetchProjects();
-  } catch (_error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -267,7 +277,7 @@ async function deleteProject() {
       message: 'Project deleted successfully',
       icon: 'check'
     });
-  } catch (_error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -279,7 +289,7 @@ async function deleteProject() {
 
 async function duplicateProject(id: string) {
   try {
-    const newProject = await projectStore.duplicateProject(id);
+    await projectStore.duplicateProject(id)
     $q.notify({
       color: 'positive',
       position: 'top',
@@ -287,7 +297,7 @@ async function duplicateProject(id: string) {
       icon: 'check'
     });
     // Optionally navigate to the new project
-  } catch (_error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',

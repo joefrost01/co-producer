@@ -21,13 +21,18 @@ export interface ActivityItem {
 }
 
 export interface ColumnDefinition {
-  name: string;
-  required?: boolean;
+  name: string;            // Making name required to match q-table's expectations
   label: string;
   align?: 'left' | 'right' | 'center';
   field: string | ((row: Record<string, unknown>) => unknown);
-  format?: (val: unknown) => string;
+  format?: (val: unknown) => string;   // Use unknown for value type to be safer
   sortable?: boolean;
+  sort?: (a: unknown, b: unknown, rowA: unknown, rowB: unknown) => number;
+  required?: boolean;
+  classes?: string;
+  style?: string;
+  headerStyle?: string;
+  headerClasses?: string;
 }
 
 export interface Settings {

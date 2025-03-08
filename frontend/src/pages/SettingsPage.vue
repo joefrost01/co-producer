@@ -625,14 +625,14 @@ async function restoreFromFile(): Promise<void> {
 
             resolve();
           }
-        } catch (parseError) {
+        } catch {
           $q.notify({
             color: 'negative',
             position: 'top',
             message: 'Invalid backup file format',
             icon: 'report_problem'
           });
-          reject(parseError);
+          reject(new Error('Failed to read backup file'));
         } finally {
           restoring.value = false;
         }
@@ -649,7 +649,18 @@ async function restoreFromFile(): Promise<void> {
         reject(new Error('Failed to read backup file'));
       };
 
-      reader.readAsText(backupFile.value);
+      if (backupFile.value) {
+        reader.readAsText(backupFile.value);
+      } else {
+        restoring.value = false;
+        $q.notify({
+          color: 'negative',
+          position: 'top',
+          message: 'No backup file selected',
+          icon: 'report_problem'
+        });
+        reject(new Error('No backup file selected'));
+      }
     });
   } catch (error) {
     $q.notify({
@@ -704,14 +715,14 @@ async function restoreBackup(backup: BackupHistoryItem): Promise<void> {
       message: `Are you sure you want to restore the backup from ${formatDate(backup.date)}?`,
       cancel: true,
       persistent: true
-    }).onOk(async () => {
+    }).onOk(() => {
       try {
         $q.loading.show({
           message: 'Restoring backup...'
         });
 
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1500))
 
         $q.loading.hide();
         $q.notify({
@@ -727,7 +738,7 @@ async function restoreBackup(backup: BackupHistoryItem): Promise<void> {
         }, 1000);
 
         resolve();
-      } catch (error) {
+      } catch {
         $q.loading.hide();
         $q.notify({
           color: 'negative',
@@ -735,7 +746,7 @@ async function restoreBackup(backup: BackupHistoryItem): Promise<void> {
           message: 'Failed to restore backup',
           icon: 'report_problem'
         });
-        reject(error);
+        reject(new Error('Failed to restore backup'));
       }
     }).onCancel(() => {
       resolve();

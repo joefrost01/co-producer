@@ -10,6 +10,9 @@ export interface Project {
   updated_at: string;
   has_briefing?: boolean;
   tags?: string[];
+
+  // Add index signature to satisfy Record<string, unknown>
+  [key: string]: unknown;
 }
 
 export interface Briefing {

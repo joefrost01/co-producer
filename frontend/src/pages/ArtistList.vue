@@ -384,11 +384,11 @@
                         >
                           <div class="col-5">
                             <q-input
-                              v-model="settingKeys[index]?.[i] || ''"
+                              :model-value="settingKeys[index]?.[i] || ''"
+                              @update:model-value="updateGearSettingKey(index, i)"
                               label="Parameter"
                               outlined
                               dense
-                              @update:model-value="updateGearSettingKey(index, i)"
                             />
                           </div>
                           <div class="col-5">
@@ -582,7 +582,7 @@ onMounted(async () => {
   try {
     await artistStore.fetchArtists();
     await tagStore.fetchTags();
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -654,7 +654,7 @@ async function deleteArtist(): Promise<void> {
       message: 'Artist deleted successfully',
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -774,7 +774,7 @@ async function saveArtist(): Promise<void> {
       });
     }
     artistDialog.value = false;
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',

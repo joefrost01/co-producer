@@ -725,7 +725,7 @@ function addToLearningPlan(technique: Technique) {
 
 function saveLearningPlan() {
   try {
-    progressStore.addToLearningPlan(learningPlan);
+    void progressStore.addToLearningPlan(learningPlan);
 
     $q.notify({
       color: 'positive',

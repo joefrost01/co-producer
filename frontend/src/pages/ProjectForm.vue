@@ -311,7 +311,7 @@ onMounted(async () => {
         };
       });
     }
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -378,7 +378,7 @@ async function saveProject(project: Project): Promise<Project> {
         message: 'Project created successfully',
         icon: 'check'
       });
-      router.push(`/projects/${savedProject.id}`);
+      void router.push(`/projects/${savedProject.id}`);
     }
 
     return savedProject;

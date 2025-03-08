@@ -430,11 +430,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useArtistStore } from 'src/stores/artist-store';
 import { useProgressStore } from 'src/stores/progress-store';
-import { useConfirmation } from 'src/composables/useConfirmation';
 import EntityCard from 'src/components/common/EntityCard.vue';
 import StatusBadge from 'src/components/common/StatusBadge.vue';
 import FilterPanel from 'src/components/common/FilterPanel.vue';
@@ -555,7 +554,7 @@ onMounted(async () => {
     const id = route.params.id as string;
     const artistData = await artistStore.fetchArtist(id);
     artist.value = { ...artistData };
-  } catch (_error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -646,7 +645,7 @@ async function updateProgress(techniqueId: string, status: string): Promise<void
       message: `Progress updated to ${status === 'NotStarted' ? 'Not Started' : status === 'InProgress' ? 'In Progress' : 'Mastered'}`,
       icon: 'check'
     });
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
@@ -686,7 +685,7 @@ async function saveLearningPlan(): Promise<void> {
     });
 
     planDialog.value = false;
-  } catch (error) {
+  } catch {
     $q.notify({
       color: 'negative',
       position: 'top',
