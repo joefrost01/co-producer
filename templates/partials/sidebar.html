@@ -1,0 +1,61 @@
+<div class="sidebar-sticky pt-3">
+  <div class="d-flex align-items-center justify-content-center mb-4">
+    <h1 class="h5 mb-0">
+      <i class="bi bi-music-note-beamed"></i>
+      Co-Producer
+    </h1>
+  </div>
+
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="/dashboard">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'projects' %}active{% endif %}" href="/projects">
+        <i class="bi bi-folder me-2"></i>
+        Projects
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'artists' %}active{% endif %}" href="/artists">
+        <i class="bi bi-person me-2"></i>
+        Artists
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'techniques' %}active{% endif %}" href="/techniques">
+        <i class="bi bi-music-note-list me-2"></i>
+        Techniques
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'gear' %}active{% endif %}" href="/gear">
+        <i class="bi bi-tools me-2"></i>
+        Gear
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'progress' %}active{% endif %}" href="/progress">
+        <i class="bi bi-graph-up me-2"></i>
+        Progress
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_page == 'tags' %}active{% endif %}" href="/tags">
+        <i class="bi bi-tags me-2"></i>
+        Tags
+      </a>
+    </li>
+  </ul>
+
+  <hr>
+
+  <div class="px-3 mt-4">
+    <a href="/projects/new" class="btn btn-primary w-100">
+      <i class="bi bi-plus"></i> New Project
+    </a>
+  </div>
+</div>

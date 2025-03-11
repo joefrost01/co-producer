@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Co-Producer - Home{% endblock %}
+
+{% block content %}
+<div class="text-center mt-5 mb-4">
+  <h1 class="display-4">Co-Producer</h1>
+  <p class="lead">AI-powered collaborative music production assistant</p>
+
+  <div class="mt-5">
+    <a href="/projects/new" class="btn btn-lg btn-primary me-2">Create New Project</a>
+    <a href="/projects" class="btn btn-lg btn-outline-secondary">Browse Projects</a>
+  </div>
+</div>
+
+<div class="row mt-5 g-4">
+  <!-- Feature Cards -->
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">AI-Powered Collaboration</h5>
+        <p class="card-text">Generate production ideas, refine arrangements, and experiment with different styles.</p>
+        <a href="/projects" class="btn btn-sm btn-outline-primary">Learn More</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Learning Integration</h5>
+        <p class="card-text">Get tailored learning resources for instruments, techniques, and production styles.</p>
+        <a href="/techniques" class="btn btn-sm btn-outline-primary">Explore</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Track Development</h5>
+        <p class="card-text">Follow structured workflows to build a song from initial concept to completion.</p>
+        <a href="/projects/new" class="btn btn-sm btn-outline-primary">Get Started</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Equipment Awareness</h5>
+        <p class="card-text">AI understands your available gear, plugins, and instruments for practical suggestions.</p>
+        <a href="/gear" class="btn btn-sm btn-outline-primary">Manage Gear</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Artist Inspiration</h5>
+        <p class="card-text">Draw inspiration from various artists and their unique techniques.</p>
+        <a href="/artists" class="btn btn-sm btn-outline-primary">View Artists</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Progress Tracking</h5>
+        <p class="card-text">Monitor your improvement in different techniques and skills.</p>
+        <a href="/progress" class="btn btn-sm btn-outline-primary">Track Progress</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-5 pt-3">
+  <h2 class="text-center mb-4">How It Works</h2>
+
+  <div class="row g-4 justify-content-center">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="h5">Step 1</h3>
+          <h4 class="h6">Define Your Project</h4>
+          <p class="small">Choose a track concept, style, and inspirations. Define your learning objectives and gear.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="h5">Step 2</h3>
+          <h4 class="h6">Generate Briefing</h4>
+          <p class="small">The system compiles an AI-ready briefing pack containing all your project details.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="h5">Step 3</h3>
+          <h4 class="h6">Collaborate with AI</h4>
+          <p class="small">Engage in dynamic idea exchanges. Receive production and arrangement suggestions.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="h5">Step 4</h3>
+          <h4 class="h6">Develop & Finalize</h4>
+          <p class="small">Apply learned techniques to your music. Iterate based on AI and personal insights.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

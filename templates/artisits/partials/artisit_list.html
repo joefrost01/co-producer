@@ -1,0 +1,85 @@
+<!-- Loading indicator -->
+<div class="htmx-indicator d-flex justify-content-center my-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+{% if artists %}
+<div class="row g-4">
+  {% for artist in artists %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-start">
+          <div class="avatar bg-primary text-white me-3">
+            {{ artist.name[0] }}
+          </div>
+          <div>
+            <h5 class="card-title">{{ artist.name }}</h5>
+            <h6 class="card-subtitle mb-2 text-body-secondary">{{ artist.instrument }}</h6>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          {% if artist.band %}
+          <span class="badge bg-primary me-1">{{ artist.band }}</span>
+          {% endif %}
+
+          {% if artist.era %}
+          <span class="badge bg-secondary me-1">{{ artist.era }}</span>
+          {% endif %}
+
+          <span class="badge bg-info">{{ artist.difficulty }}</span>
+        </div>
+
+        <p class="card-text mt-3">{{ artist.description | truncate(100) }}</p>
+
+        <div class="mt-2">
+          {% for tag in artist.tags %}
+          <span class="badge text-bg-light me-1">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card-footer bg-transparent">
+        <div class="d-flex justify-content-between">
+          <a href="/artists/{{ artist.id }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-eye"></i> View
+          </a>
+
+          <div>
+            <button class="btn btn-outline-secondary btn-sm me-1"
+                    hx-get="/artists/{{ artist.id }}/edit"
+                    hx-target="#artistModal .modal-content">
+              <i class="bi bi-pencil"></i> Edit
+            </button>
+
+            <button class="btn btn-outline-danger btn-sm delete-artist-btn"
+                    data-artist-id="{{ artist.id }}"
+                    data-artist-name="{{ artist.name }}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteModal">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+  <div class="mb-3">
+    <i class="bi bi-person-x" style="font-size: 3rem; color: var(--bs-secondary);"></i>
+  </div>
+  <h3 class="h4">No artists found</h3>
+  <p class="text-body-secondary">Try adjusting your filters or add a new artist.</p>
+  <button class="btn btn-primary mt-2"
+          hx-get="/artists/new"
+          hx-target="#artistModal .modal-content">
+    <i class="bi bi-plus"></i> Add Artist
+  </button>
+</div>
+{% endif %}

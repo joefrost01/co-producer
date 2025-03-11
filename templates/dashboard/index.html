@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Co-Producer{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+{% set active_page = "dashboard" %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3">Dashboard</h1>
+  <a href="/projects/new" class="btn btn-primary">
+    <i class="bi bi-plus"></i> New Project
+  </a>
+</div>
+
+<div class="row gy-4">
+  <!-- Stats Cards Row -->
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="card-title h1 text-primary">{{ stats.project_count }}</h2>
+          <p class="card-text mb-0">Projects</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learning Progress -->
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Learning Progress</h5>
+          <a href="/progress" class="btn btn-sm btn-link">View All</a>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span>Techniques Mastered</span>
+              <span>{{ stats.mastered_techniques }} / {{ stats.technique_count }}</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-success" role="progressbar"
+                   style="width: {{ stats.mastered_percentage }}%"
+                   aria-valuenow="{{ stats.mastered_percentage }}"
+                   aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+
+          {% if recent_techniques %}
+          <div class="list-group list-group-flush">
+            {% for technique in recent_techniques %}
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0">{{ technique.name }}</h6>
+                  <small>{{ technique.artist_name }}</small>
+                </div>
+                <span class="status-badge status-{{ technique.progress.status | slugify }}">
+                                        {{ technique.progress.status | format_status }}
+                                    </span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-center text-body-secondary py-3">No techniques tracked yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Activity Timeline</h5>
+        </div>
+        <div class="card-body">
+          {% if activities %}
+          <ul class="list-group list-group-flush">
+            {% for activity in activities %}
+            <li class="list-group-item">
+              <div class="d-flex">
+                <div class="me-3">
+                  <div class="avatar" style="background-color: {{ activity.color }}; color: white;">
+                    <i class="bi bi-{{ activity.icon }}"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="fw-bold">{{ activity.title }}</div>
+                  <div>{{ activity.description }}</div>
+                  <small class="text-body-secondary">{{ activity.timestamp | date }}</small>
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="text-center py-4">
+            <p class="text-body-secondary">No recent activity. Your activity will appear here as you work on projects, techniques, and more.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+  <i class="bi bi-folder text-primary" style="font-size: 2rem;"></i>
+</div>
+</div>
+</div>
+
+<div class="col-md-3">
+  <div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="card-title h1 text-secondary">{{ stats.artist_count }}</h2>
+        <p class="card-text mb-0">Artists</p>
+      </div>
+      <i class="bi bi-person text-secondary" style="font-size: 2rem;"></i>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-3">
+  <div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="card-title h1 text-info">{{ stats.technique_count }}</h2>
+        <p class="card-text mb-0">Techniques</p>
+      </div>
+      <i class="bi bi-music-note-list text-info" style="font-size: 2rem;"></i>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-3">
+  <div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="card-title h1 text-success">{{ stats.mastered_techniques }}</h2>
+        <p class="card-text mb-0">Mastered</p>
+      </div>
+      <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Projects -->
+<div class="col-md-8">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Recent Projects</h5>
+      <a href="/projects" class="btn btn-sm btn-link">View All</a>
+    </div>
+    <div class="card-body">
+      {% if recent_projects %}
+      <div class="list-group list-group-flush">
+        {% for project in recent_projects %}
+        <a href="/projects/{{ project.id }}" class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ project.title }}</h5>
+            <small>{{ project.updated_at | date }}</small>
+          </div>
+          <p class="mb-1 text-truncate">{{ project.description }}</p>
+          {% if project.has_briefing %}
+          <span class="badge bg-secondary">Briefing</span>
+          {% endif %}
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4">
+        <p class="text-body-secondary mb-3">No projects yet. Create your first project to get started!</p>
+        <a href="/projects/new" class="btn btn-primary">Create Project</a>
+      </div>
+      {% endif %}
+    </div>

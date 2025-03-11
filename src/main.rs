@@ -1,5 +1,8 @@
 mod handlers;
 mod model;
+mod template;
+mod error;
+mod utils;
 
 use std::path::Path;
 use crate::handlers::routes::create_router;
@@ -7,6 +10,7 @@ use async_trait::async_trait;
 use deadpool::managed;
 use surrealdb::engine::local::{Db, RocksDb};
 use surrealdb::{Error, Surreal};
+use crate::utils::app_state::AppState;
 
 // DB connection manager
 struct Manager {
@@ -41,6 +45,8 @@ impl managed::Manager for Manager {
 // Pool type definition
 pub type Pool = managed::Pool<Manager>;
 
+
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the connection pool
@@ -48,12 +54,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db_path: "./data/database".to_string(),
     };
 
+    // Initialize the templates
+    template::init_templates();
+    
+    let app_state = AppState {
+        // Empty for now
+    };
+
     let pool = Pool::builder(manager)
         .max_size(16)
         .build()?;
 
-    // Create the router with the database state
-    let app = create_router().with_state(pool);
+    // Create the router with the application state
+    let app = create_router(app_state);
 
     // Start the server
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;

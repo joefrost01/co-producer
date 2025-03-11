@@ -1,0 +1,144 @@
+<!-- Loading indicator -->
+<div class="htmx-indicator d-flex justify-content-center my-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+{% if artist.techniques and artist.techniques|length > 0 %}
+<div class="accordion" id="techniquesAccordion">
+  {% for technique in filtered_techniques %}
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed {% if technique.progress and technique.progress.status == 'Mastered' %}text-success{% endif %}"
+              type="button" data-bs-toggle="collapse"
+              data-bs-target="#techniqueCollapse{{ loop.index }}">
+        <div class="d-flex align-items-center w-100">
+          <div class="avatar me-3"
+               style="background-color: var(--bs-{% if technique.difficulty <= 2 %}success{% elif technique.difficulty == 3 %}warning{% else %}danger{% endif %});
+                                        width: 35px; height: 35px; font-size: 0.9rem;">
+            {{ technique.difficulty }}
+          </div>
+          <div class="flex-grow-1">
+            <div>{{ technique.name }}</div>
+            <div class="text-body-secondary small text-truncate" style="max-width: 300px;">
+              {{ technique.description }}
+            </div>
+          </div>
+          {% if technique.progress %}
+          <span class="status-badge status-{{ technique.progress.status | slugify }} ms-2">
+                                    {{ technique.progress.status | format_status }}
+                                </span>
+          {% else %}
+          <span class="status-badge status-not-started ms-2">
+                                    Not Started
+                                </span>
+          {% endif %}
+        </div>
+      </button>
+    </h2>
+    <div id="techniqueCollapse{{ loop.index }}" class="accordion-collapse collapse"
+         data-bs-parent="#techniquesAccordion">
+      <div class="accordion-body">
+        <div class="mb-3">
+          <h6>Description</h6>
+          <p>{{ technique.description }}</p>
+        </div>
+
+        {% if technique.tab_notation %}
+        <div class="mb-3">
+          <h6>Tab Notation</h6>
+          <pre class="tab-notation">{{ technique.tab_notation }}</pre>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <h6>Instructions</h6>
+          <p>{{ technique.instructions }}</p>
+        </div>
+
+        <div class="mb-3">
+          <h6>Difficulty</h6>
+          <div class="d-flex align-items-center">
+            <div class="me-2">
+              {% for i in range(1, 6) %}
+              {% if i <= technique.difficulty %}
+              <i class="bi bi-star-fill text-warning"></i>
+              {% else %}
+              <i class="bi bi-star text-warning"></i>
+              {% endif %}
+              {% endfor %}
+            </div>
+            <span>{{ technique.difficulty }} / 5</span>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+          <div class="dropdown me-2">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle"
+                    type="button" data-bs-toggle="dropdown">
+              Update Status
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <button class="dropdown-item update-status-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#statusModal"
+                        data-technique-id="{{ technique.id }}"
+                        data-current-status="{{ technique.progress.status if technique.progress else 'NotStarted' }}"
+                        data-notes="{{ technique.progress.notes if technique.progress and technique.progress.notes else '' }}">
+                  Custom Status...
+                </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item"
+                        hx-put="/techniques/update-progress"
+                        hx-vals='{"technique_id": "{{ technique.id }}", "status": "NotStarted"}'
+                        hx-target="#techniquesList">
+                  Not Started
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item"
+                        hx-put="/techniques/update-progress"
+                        hx-vals='{"technique_id": "{{ technique.id }}", "status": "InProgress"}'
+                        hx-target="#techniquesList">
+                  In Progress
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item"
+                        hx-put="/techniques/update-progress"
+                        hx-vals='{"technique_id": "{{ technique.id }}", "status": "Mastered"}'
+                        hx-target="#techniquesList">
+                  Mastered
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <button class="btn btn-outline-secondary btn-sm add-to-plan-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#planModal"
+                  data-technique-id="{{ technique.id }}">
+            <i class="bi bi-calendar-plus"></i> Add to Learning Plan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-4">
+  <i class="bi bi-music-note-list" style="font-size: 2rem; color: var(--bs-secondary);"></i>
+  <h5 class="mt-3">No Techniques</h5>
+  <p class="text-body-secondary">This artist doesn't have any techniques defined yet.</p>
+  <button class="btn btn-primary mt-2"
+          hx-get="/artists/{{ artist.id }}/edit"
+          hx-target="#artistModal .modal-content">
+    <i class="bi bi-plus"></i> Add Technique
+  </button>
+</div>
+{% endif %}

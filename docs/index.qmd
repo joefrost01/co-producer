@@ -38,22 +38,16 @@
 
 ### Prerequisites
 - **Rust** (for backend processing)
-- **Vue + Quasar** (for frontend UI)
 - **SurrealDB** (for project storage)
 - **LangChain-Rust** (for connected AI interactions)
 
 ### Running the Development Server
 
-1. Navigate to the frontend directory:
-   ```sh
-   cd frontend
-   quasar dev
-   ```
-2. Start the backend API:
+1. Start the backend API:
    ```sh
    cargo run --release
    ```
-3. Access the UI at `http://localhost:9000`.
+2. Access the UI at `http://localhost:3000`.
 
 ## Contributing
 

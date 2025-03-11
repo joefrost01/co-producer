@@ -1,0 +1,225 @@
+<div class="modal-header">
+  <h5 class="modal-title" id="artistModalLabel">
+    {% if artist.id %}Edit Artist{% else %}Add New Artist{% endif %}
+  </h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+  <form id="artistForm"
+        {% if artist.id %}
+        hx-put="/artists/{{ artist.id }}"
+        {% else %}
+        hx-post="/artists"
+        {% endif %}
+        hx-target="#artistList">
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="artistName" class="form-label">Artist Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="artistName" name="name"
+               value="{{ artist.name }}" required>
+      </div>
+
+      <div class="col-md-6">
+        <label for="artistInstrument" class="form-label">Instrument/Role <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="artistInstrument" name="instrument"
+               value="{{ artist.instrument }}" required>
+      </div>
+
+      <div class="col-md-6">
+        <label for="artistBand" class="form-label">Band/Group</label>
+        <input type="text" class="form-control" id="artistBand" name="band"
+               value="{{ artist.band }}">
+      </div>
+
+      <div class="col-md-6">
+        <label for="artistEra" class="form-label">Era</label>
+        <input type="text" class="form-control" id="artistEra" name="era"
+               value="{{ artist.era }}" placeholder="e.g., 1970s, Modern, Classical">
+      </div>
+
+      <div class="col-md-6">
+        <label for="artistDifficulty" class="form-label">Difficulty Level <span class="text-danger">*</span></label>
+        <select class="form-select" id="artistDifficulty" name="difficulty" required>
+          <option value="easy" {% if artist.difficulty == 'easy' %}selected{% endif %}>Easy</option>
+          <option value="moderate" {% if artist.difficulty == 'moderate' %}selected{% endif %}>Moderate</option>
+          <option value="challenging" {% if artist.difficulty == 'challenging' %}selected{% endif %}>Challenging</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label for="artistTags" class="form-label">Tags</label>
+        <select class="form-select" id="artistTags" name="tags" multiple>
+          {% for tag in tag_options %}
+          <option value="{{ tag }}"
+                  {% if tag in artist.tags %}selected{% endif %}>
+            {{ tag }}
+          </option>
+          {% endfor %}
+        </select>
+        <small class="form-text text-body-secondary">Hold Ctrl/Cmd to select multiple tags</small>
+      </div>
+
+      <div class="col-12">
+        <label for="artistDescription" class="form-label">Description <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="artistDescription" name="description"
+                  rows="4" required>{{ artist.description }}</textarea>
+      </div>
+    </div>
+
+    <!-- Techniques Section -->
+    <div class="mt-4">
+      <h5>Techniques</h5>
+      <p class="text-body-secondary">Add signature techniques associated with this artist</p>
+
+      <div id="techniquesList">
+        {% if artist.techniques %}
+        {% for technique in artist.techniques %}
+        <div class="card mb-3 technique-item">
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Technique Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="techniques[{{ loop.index0 }}].name"
+                       value="{{ technique.name }}" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Difficulty (1-5)</label>
+                <input type="range" class="form-range" min="1" max="5" step="1"
+                       name="techniques[{{ loop.index0 }}].difficulty"
+                       value="{{ technique.difficulty }}">
+                <div class="d-flex justify-content-between">
+                  <span class="difficulty-1">1</span>
+                  <span class="difficulty-2">2</span>
+                  <span class="difficulty-3">3</span>
+                  <span class="difficulty-4">4</span>
+                  <span class="difficulty-5">5</span>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control"
+                          name="techniques[{{ loop.index0 }}].description"
+                          rows="2">{{ technique.description }}</textarea>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Instructions</label>
+                <textarea class="form-control"
+                          name="techniques[{{ loop.index0 }}].instructions"
+                          rows="2">{{ technique.instructions }}</textarea>
+              </div>
+            </div>
+
+            <div class="text-end mt-2">
+              <button type="button" class="btn btn-sm btn-outline-danger remove-technique">
+                <i class="bi bi-trash"></i> Remove
+              </button>
+            </div>
+
+            <input type="hidden" name="techniques[{{ loop.index0 }}].id" value="{{ technique.id }}">
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="text-center">
+        <button type="button" class="btn btn-outline-primary" id="addTechniqueBtn">
+          <i class="bi bi-plus"></i> Add Technique
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  <button type="button" class="btn btn-primary" onclick="document.getElementById('artistForm').submit()">
+    Save
+  </button>
+</div>
+
+<script>
+  // Handle adding new techniques
+  document.getElementById('addTechniqueBtn').addEventListener('click', function() {
+    const techniquesList = document.getElementById('techniquesList');
+    const techniqueCount = document.querySelectorAll('.technique-item').length;
+
+    const template = `
+            <div class="card mb-3 technique-item">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Technique Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control"
+                                   name="techniques[${techniqueCount}].name" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Difficulty (1-5)</label>
+                            <input type="range" class="form-range" min="1" max="5" step="1"
+                                   name="techniques[${techniqueCount}].difficulty" value="3">
+                            <div class="d-flex justify-content-between">
+                                <span class="difficulty-1">1</span>
+                                <span class="difficulty-2">2</span>
+                                <span class="difficulty-3">3</span>
+                                <span class="difficulty-4">4</span>
+                                <span class="difficulty-5">5</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control"
+                                      name="techniques[${techniqueCount}].description"
+                                      rows="2"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Instructions</label>
+                            <textarea class="form-control"
+                                      name="techniques[${techniqueCount}].instructions"
+                                      rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-technique">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = template;
+    const newTechnique = tempContainer.firstElementChild;
+
+    techniquesList.appendChild(newTechnique);
+  });
+
+  // Handle removing techniques
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-technique')) {
+      const techniqueItem = e.target.closest('.technique-item');
+      techniqueItem.remove();
+
+      // Reindex remaining techniques
+      document.querySelectorAll('.technique-item').forEach((item, index) => {
+        item.querySelectorAll('input, textarea').forEach(input => {
+          const name = input.getAttribute('name');
+          if (name) {
+            const newName = name.replace(/techniques\[\d+\]/, `techniques[${index}]`);
+            input.setAttribute('name', newName);
+          }
+        });
+      });
+    }
+  });
+</script>

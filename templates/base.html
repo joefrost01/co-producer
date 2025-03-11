@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="{{ theme | default('light') }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Co-Producer{% endblock %}</title>
+
+  <!-- Dynamic theme loading based on user preference -->
+  {% if theme == "dark" %}
+  <link rel="stylesheet" href="/static/css/bootstrap-darkly.min.css">
+  {% else %}
+  <link rel="stylesheet" href="/static/css/bootstrap-flatly.min.css">
+  {% endif %}
+
+  <link rel="stylesheet" href="/static/css/custom.css">
+
+  <!-- HTMX -->
+  <script src="/static/js/htmx.min.js"></script>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+      {% include "partials/sidebar.html" %}
+    </div>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      {% include "partials/header.html" %}
+
+      <!-- Content -->
+      <div class="content-wrapper py-4">
+        {% block content %}{% endblock %}
+      </div>
+
+      {% include "partials/footer.html" %}
+    </main>
+  </div>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JS -->
+<script src="/static/js/app.js"></script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

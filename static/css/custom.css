@@ -1,0 +1,138 @@
+/* Custom styles */
+
+/* Sidebar styling */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 48px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Active nav item */
+.nav-link.active {
+    font-weight: 500;
+}
+
+/* Main content wrapper */
+.content-wrapper {
+    min-height: calc(100vh - 160px);
+}
+
+/* Card hover effect */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bar styling */
+.progress {
+    height: 10px;
+    margin-bottom: 10px;
+}
+
+/* Monospace font for tabs/code */
+.tab-notation {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.status-not-started {
+    background-color: var(--bs-gray);
+    color: white;
+}
+
+.status-in-progress {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.status-mastered {
+    background-color: var(--bs-success);
+    color: white;
+}
+
+/* HTMX indicators */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 500ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+
+/* Toast positioning */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1100;
+}
+
+/* Difficulty levels */
+.difficulty-1 { color: var(--bs-success); }
+.difficulty-2 { color: var(--bs-info); }
+.difficulty-3 { color: var(--bs-warning); }
+.difficulty-4 { color: var(--bs-orange); }
+.difficulty-5 { color: var(--bs-danger); }
+
+/* Custom avatar */
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding-top: 0;
+    }
+
+    .sidebar-sticky {
+        height: auto;
+    }
+}
