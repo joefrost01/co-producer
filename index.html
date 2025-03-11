@@ -262,7 +262,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="prerequisites">Prerequisites</h3>
 <ul>
 <li><strong>Rust</strong> (for backend processing)</li>
-<li><strong>Vue + Quasar</strong> (for frontend UI)</li>
 <li><strong>SurrealDB</strong> (for project storage)</li>
 <li><strong>LangChain-Rust</strong> (for connected AI interactions)</li>
 </ul>
@@ -270,12 +269,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="running-the-development-server" class="level3">
 <h3 class="anchored" data-anchor-id="running-the-development-server">Running the Development Server</h3>
 <ol type="1">
-<li><p>Navigate to the frontend directory:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> frontend</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quasar</span> dev</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p>Start the backend API:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--release</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-<li><p>Access the UI at <code>http://localhost:9000</code>.</p></li>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--release</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Access the UI at <code>http://localhost:3000</code>.</p></li>
 </ol>
 </section>
 </section>
